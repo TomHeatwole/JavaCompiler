@@ -10,5 +10,6 @@ _main:
   mov rdi, 0
   syscall
 section .data
-msg:    db      "Hello, world", 10
+msg:    db      "Hello, worlds", 10
 .len:   equ     $ - msg
+

@@ -3,11 +3,14 @@
 if [ "$#" -lt 1 ]; then
     echo "Invalid number of arguments"
     echo "Usage: ./assemble_link_run <name_of_assembly_file>"
-else
-    nasm -f macho64 $1 -o main.o
-    ld -e _main -macosx_version_min 10.8 -arch x86_64 main.o -lSystem
-    ./a.out
-    rm main.o
+    exit 1
 fi
-
+nasm -f macho64 $1 -o main.o || exit 1
+exec 3>&2
+exec 2> /dev/null
+#TODO: Print output when ld fails
+ld -e _main -macosx_version_min 10.8 -arch x86_64 main.o -lSystem
+exec 2>&3
+./a.out
+rm main.o
 
