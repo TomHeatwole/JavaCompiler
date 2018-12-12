@@ -5,6 +5,7 @@ if [ "$#" -lt 1 ]; then
     echo "Usage: ./assemble_link_run <name_of_assembly_file>"
     exit 1
 fi
+
 nasm -f macho64 $1 -o main.o || exit 1
 exec 3>&2
 exec 2> /dev/null
