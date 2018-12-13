@@ -2,8 +2,10 @@ import java.io.File;
 import java.lang.StringBuilder;
 import java.util.Scanner;
 import java.util.Stack;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Arrays;
 
 
 public class Compile {
@@ -14,8 +16,13 @@ public class Compile {
             System.out.println("Usage: java Compile <name_of_java_file>");
             return;
         }
-        LinkedList<String> code = new LinkedList<>();
-        if (!checkBalance(getScanner(args[0]), code)) {
+        ArrayList<String> code = new ArrayList<>();
+        ArrayList<Integer> lineNums = new ArrayList<>();
+        if (!checkBalance(getScanner(args[0]), code, lineNums)) {
+            return;
+        }
+        List<Token> tokens = lex(code, lineNums);
+        if (tokens.size() == 0) {
             return;
         }
    }
@@ -31,7 +38,7 @@ public class Compile {
 
    // Checks for balanced parentheses and quotes: [], {}, () ""
    // TODO: Parse out comments and store result in code
-    public static boolean checkBalance(Scanner s, List<String> code) {
+    public static boolean checkBalance(Scanner s, List<String> code, List<Integer> lineNums) {
         if (s == null) {
             return false;
         }
@@ -88,6 +95,7 @@ public class Compile {
             String codeLine = parsedLine.toString().trim();
             if (codeLine.length() > 0) {
                 code.add(parsedLine.toString());
+                lineNums.add(lineNumber);
             }
         }
         if (parens.size() != 0) {
@@ -95,6 +103,96 @@ public class Compile {
             return false;
         }
         return true;
-   }
+    }
+
+    public static List<Token> lex(List<String> code, List<Integer> lineNums) {
+        ArrayList<Token> ret = new ArrayList<>();
+        final String keywords[] = {
+            "abstract", "assert", "boolean",
+            "break", "byte", "case", "catch", "char", "class", "const",
+            "continue", "default", "do", "double", "else", "extends", "false",
+            "final", "finally", "float", "for", "goto", "if", "implements",
+            "import", "instanceof", "int", "interface", "long", "main", "native",
+            "new", "null", "package", "private", "protected", "public",
+            "return", "short", "static", "strictfp", "super", "switch",
+            "synchronized", "this", "throw", "throws", "transient", "true",
+            "try", "void", "volatile", "while"
+        };
+        for (int i = 0; i < code.size(); i++) {
+           String line = code.get(i);
+           String[] words = line.split(" ");
+           String word = "";
+           boolean next = true;
+           for (int j = 0; j < words.length; j++) {
+               if (next) {
+                   word = words[j];
+               }
+               next = true;
+               if (word.length() == 0) {
+                   continue;
+               }
+               if (Arrays.binarySearch(keywords, word) > 0) {
+                   ret.add(new Token(word, TokenType.KEYWORD, lineNums.get(i)));
+               } else if (Character.isDigit(word.charAt(0))) {
+                   boolean decimal = false;
+                   for (int k = 1; k < word.length(); k++) {
+                       if (Character.isDigit(word.charAt(k))) {
+                           continue;
+                       }
+                       if (word.charAt(k) == '.') {
+                           if (decimal) {
+                               notifyInvalidToken(word, lineNums.get(i), line.indexOf(word));
+                           }
+                           decimal = true;
+                       } else if (Character.isLetter(word.charAt(k))) {
+                           notifyInvalidToken(word, lineNums.get(i), line.indexOf(word));
+                       } else {
+                           ret.add(new Token(word.substring(0, k), TokenType.IDENTIFIER, lineNums.get(i)));
+                           word = word.substring(k);
+                           next = false;
+                           break;
+                       }
+                   }
+                   ret.add(new Token(word, decimal ? TokenType.FLOAT_LITERAL : TokenType.INT_LITERAL, lineNums.get(i)));
+               } else if (Character.isLetter(word.charAt(0))) {
+                   for (int k = 1; k < word.length(); k++) {
+                       if (!Character.isLetter(word.charAt(k)) && !Character.isDigit(word.charAt(k))) {
+                           ret.add(new Token(word.substring(0, k), TokenType.IDENTIFIER, lineNums.get(i)));
+                           word = word.substring(k);
+                           next = false;
+                           break;
+                       }
+                   }
+                   if (next) {
+                       ret.add(new Token(word, TokenType.IDENTIFIER, lineNums.get(i)));
+                   }
+               }
+           }
+        }
+        return ret;
+    }
+
+    public static List<Token> notifyInvalidToken(String word, int lineNumber, int charNumber) {
+        System.out.println("Invalid token: \"" + word + "\" at " + lineNumber + ":" + charNumber);
+        return new LinkedList<Token>();
+    }
+
+    enum TokenType {
+        KEYWORD, OPEN_BRACE, CLOSE_BRACE, OPEN_PAREN, CLOSE_PAREN, OPEN_BRACKET, CLOSE_BRACKET,
+        SEMICOLON, IDENTIFIER, INT_LITERAL, FLOAT_LITERAL, STRING_LITERAL, CHAR_LITERAL
+    }
+
+    public static class Token {
+
+        public String value;
+        public TokenType type;
+        public int lineNumber;
+
+        public Token(String value, TokenType type, int lineNumber) {
+            this.value = value;
+            this.type = type;
+            this.lineNumber = lineNumber;
+        }
+    }
 }
 
