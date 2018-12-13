@@ -1,4 +1,4 @@
 a.out
 Compile.class
 Test.java
-Test.class
+*.class
