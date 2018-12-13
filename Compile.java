@@ -175,7 +175,7 @@ public class Compile {
 					}
 				} else if (word.charAt(0) == '"') {
 					for (int k = 1; k < word.length(); k++) {
-						if (word.charAt(k) == '"' && word.charAt(k - 1) != '\'') {
+						if (word.charAt(k) == '"' && word.charAt(k - 1) != '\\') {
 							ret.add(new Token(word.substring(0, k), TokenType.STRING_LITERAL, lineNums.get(i)));
 							word = word.substring(k);
 							next = false;
@@ -183,31 +183,29 @@ public class Compile {
 						}
 					}
 					if (next) {
-                        System.out.println("word: " + word + ", line: " + line);
-						int indexHere = line.substring(quoteOffset).indexOf(word);
+						int indexHere = quoteOffset + line.substring(quoteOffset).indexOf(word);
 						quoteOffset = indexHere + word.length();
-                        System.out.println(quoteOffset);
 						do {
 							quoteOffset += line.substring(quoteOffset).indexOf('"') + 1;
 						} while (line.charAt(quoteOffset - 2) == '\'');
 						ret.add(new Token(line.substring(indexHere, quoteOffset), TokenType.STRING_LITERAL,
 								lineNums.get(i)));
 						words = line.substring(quoteOffset).split(" ");
-                        System.out.println("words[0]: " + words[0]);
-                        System.out.println(quoteOffset);
 						j = -1;
 					}
 				} else if (word.charAt(0) == '\'') {
 					for (int k = 1; k < word.length(); k++) {
-						if (word.charAt(k) == '\'' && word.charAt(k - 1) != '\'') {
-							ret.add(new Token(word.substring(0, k), TokenType.IDENTIFIER, lineNums.get(i)));
-							word = word.substring(k);
+						if (word.charAt(k) == '\'' && word.charAt(k - 1) != '\\') {
+							ret.add(new Token(word.substring(0, k + 1), TokenType.CHAR_LITERAL, lineNums.get(i)));
+							word = word.substring(k + 1);
 							next = false;
 							break;
 						}
 					}
 					if (next) {
-						ret.add(new Token(word, TokenType.IDENTIFIER, lineNums.get(i)));
+						ret.add(new Token(word + " \'", TokenType.CHAR_LITERAL, lineNums.get(i)));
+                        for (; words[j + 1].length() == 0; j++);
+                        words[j + 1] = words[j + 1].substring(1);
 					}
 				} else {
 					ret.add(new Token("" + word.charAt(0), TokenType.SYMBOL, lineNums.get(i)));
