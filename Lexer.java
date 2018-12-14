@@ -11,6 +11,7 @@ public class Lexer {
 
     private String[] keywords;
 
+    // Requires keywords to be sorted alphabetically
     public Lexer(String[] keywords) {
         this.keywords = keywords;
     }
