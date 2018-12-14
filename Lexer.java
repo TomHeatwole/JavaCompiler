@@ -18,6 +18,8 @@ public class Lexer {
 
     // Return empty list on error
     public List<Token> lex(String fileName) {
+        // TODO: Maybe add char # to token using quoteOffset 
+        // TODO: Maybe hash keywords instead of binary search? - probably not neccesary due to problem size
 		ArrayList<String> code = new ArrayList<>();
 		ArrayList<Integer> lineNums = new ArrayList<>(); // lineNums[significant line #] = original line #
 		if (!checkBalance(getScanner(fileName), code, lineNums)) {
@@ -55,7 +57,7 @@ public class Lexer {
 							decimal = true;
 						} else if (Character.isLetter(word.charAt(k))) {
 							return notifyInvalidToken(word, lineNums.get(i), line.indexOf(word));
-						} else { // handsles cases with no spaces, ex. word = "123+456"
+						} else { // handles cases with no spaces, ex. word = "123+456"
 							ret.add(new Token(word.substring(0, k),
 									decimal ? TokenType.FLOAT_LITERAL : TokenType.INT_LITERAL, lineNums.get(i)));
 							word = word.substring(k);
@@ -79,7 +81,7 @@ public class Lexer {
 					if (next) {
 						ret.add(new Token(word, TokenType.IDENTIFIER, lineNums.get(i)));
 					}
-				} else if (word.charAt(0) == '"') { // String literal - already checked handled errors in checkBalance
+				} else if (word.charAt(0) == '"') { // String literal - already handled errors in checkBalance
 					for (int k = 1; k < word.length(); k++) {
 						if (word.charAt(k) == '"' && word.charAt(k - 1) != '\\') {
 							ret.add(new Token(word.substring(0, k), TokenType.STRING_LITERAL, lineNums.get(i)));
@@ -140,11 +142,11 @@ public class Lexer {
 		return new LinkedList<Token>();
 	}
 
-	// Checks for balanced parentheses and quotes: [], {}, () ""
+    // Checks for balanced parentheses and quotes: [], {}, () ""
     // Parses out comments
     // Stores parsed lines in List<String> code
-	 boolean checkBalance(Scanner s, List<String> code, List<Integer> lineNums) {
-		if (s == null) {
+    boolean checkBalance(Scanner s, List<String> code, List<Integer> lineNums) {
+        if (s == null) {
 			return false;
 		}
 		boolean quote = false; // true when current code is part of a quotation
