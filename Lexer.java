@@ -20,7 +20,7 @@ public class Lexer {
     public List<Token> lex(String fileName) {
         // TODO: Maybe add char # to token using quoteOffset 
         // TODO: Maybe hash keywords instead of binary search? - probably not neccesary due to problem size
-		ArrayList<String> code = new ArrayList<>();
+        ArrayList<String> code = new ArrayList<>();
 		ArrayList<Integer> lineNums = new ArrayList<>(); // lineNums[significant line #] = original line #
 		if (!checkBalance(getScanner(fileName), code, lineNums)) {
 			return new LinkedList<Token>();
@@ -39,7 +39,7 @@ public class Lexer {
 					j--;
 				}
 				next = true;
-				if (word.length() == 0) {
+				if (word.trim().length() == 0) {
 					continue;
 				}
 				if (Arrays.binarySearch(keywords, word) > 0) { // keyword
@@ -84,8 +84,8 @@ public class Lexer {
 				} else if (word.charAt(0) == '"') { // String literal - already handled errors in checkBalance
 					for (int k = 1; k < word.length(); k++) {
 						if (word.charAt(k) == '"' && word.charAt(k - 1) != '\\') {
-							ret.add(new Token(word.substring(0, k), TokenType.STRING_LITERAL, lineNums.get(i)));
-							word = word.substring(k);
+							ret.add(new Token(word.substring(0, k + 1), TokenType.STRING_LITERAL, lineNums.get(i)));
+							word = word.substring(k + 1);
 							next = false;
 							break;
 						}
@@ -95,7 +95,7 @@ public class Lexer {
 						quoteOffset = indexHere + word.length();
 						do {
 							quoteOffset += line.substring(quoteOffset).indexOf('"') + 1;
-						} while (line.charAt(quoteOffset - 2) == '\'');
+						} while (line.charAt(quoteOffset - 2) == '\\');
 						ret.add(new Token(line.substring(indexHere, quoteOffset), TokenType.STRING_LITERAL,
 								lineNums.get(i)));
 						words = line.substring(quoteOffset).split(" ");
@@ -103,7 +103,7 @@ public class Lexer {
 					}
 				} else if (word.charAt(0) == '\'') { // char literal
                     for (int k = 1; k < word.length(); k++) {
-						if (word.charAt(k) == '\'' && word.charAt(k - 1) != '\\') {
+						if (word.charAt(k) == '\'' && (word.charAt(k - 1) != '\\' || word.charAt(k - 2) == '\\')) {
 							ret.add(new Token(word.substring(0, k + 1), TokenType.CHAR_LITERAL, lineNums.get(i)));
 							word = word.substring(k + 1);
 							next = false;
@@ -122,11 +122,17 @@ public class Lexer {
 				}
 			}
 		}
+        for (int i = 0; i < ret.size(); i++) {
+            if (ret.get(i).value.length() == 0 || ret.get(i).value.charAt(0) == 9) {
+                ret.remove(i);
+                i--;
+            }
+        }
         return ret;
 	}
 
     // Return scanner with file name or error code: null
-	private Scanner getScanner(String filename) {
+    private Scanner getScanner(String filename) {
 		try {
 			return new Scanner(new File(filename));
 		} catch (Exception e) {
@@ -137,7 +143,7 @@ public class Lexer {
 
 
     // Return error value from lex and notifys user specific location of error
-	public List<Token> notifyInvalidToken(String word, int lineNumber, int charNumber) {
+	private List<Token> notifyInvalidToken(String word, int lineNumber, int charNumber) {
 		System.out.println("Invalid token: \"" + word + "\" at " + lineNumber + ":" + charNumber);
 		return new LinkedList<Token>();
 	}
@@ -145,7 +151,7 @@ public class Lexer {
     // Checks for balanced parentheses and quotes: [], {}, () ""
     // Parses out comments
     // Stores parsed lines in List<String> code
-    boolean checkBalance(Scanner s, List<String> code, List<Integer> lineNums) {
+    private boolean checkBalance(Scanner s, List<String> code, List<Integer> lineNums) {
         if (s == null) {
 			return false;
 		}
@@ -211,3 +217,4 @@ public class Lexer {
 		return true;
 	}
 }
+

@@ -22,6 +22,10 @@ public class Compile {
 		if (tokens.size() == 0) {
 			return;
 		}
+        for (int i = 0; i < tokens.size(); i++) {
+            Token t = tokens.get(i);
+            System.out.println(t.lineNumber +  " " + t.type + " " + t.value);
+        }
 
         // Parse
         // TODO
