@@ -16,15 +16,16 @@ public class Lexer {
         this.keywords = keywords;
     }
 
+    // Return empty list on error
     public List<Token> lex(String fileName) {
 		ArrayList<String> code = new ArrayList<>();
-		ArrayList<Integer> lineNums = new ArrayList<>();
+		ArrayList<Integer> lineNums = new ArrayList<>(); // lineNums[significant line #] = original line #
 		if (!checkBalance(getScanner(fileName), code, lineNums)) {
 			return new LinkedList<Token>();
 		}
-		ArrayList<Token> ret = new ArrayList<>();
+		ArrayList<Token> ret = new ArrayList<>(); // return value
 		String word = "";
-		boolean next = true;
+		boolean next = true; // true when lexer is ready for next word in line split on " "
 		for (int i = 0; i < code.size(); i++) {
 			int quoteOffset = 0;
 			String line = code.get(i);
@@ -39,9 +40,9 @@ public class Lexer {
 				if (word.length() == 0) {
 					continue;
 				}
-				if (Arrays.binarySearch(keywords, word) > 0) {
+				if (Arrays.binarySearch(keywords, word) > 0) { // keyword
 					ret.add(new Token(word, TokenType.KEYWORD, lineNums.get(i)));
-				} else if (Character.isDigit(word.charAt(0))) {
+				} else if (Character.isDigit(word.charAt(0))) { // number literal or error
 					boolean decimal = false;
 					for (int k = 1; k < word.length(); k++) {
 						if (Character.isDigit(word.charAt(k))) {
@@ -49,12 +50,12 @@ public class Lexer {
 						}
 						if (word.charAt(k) == '.') {
 							if (decimal) {
-								notifyInvalidToken(word, lineNums.get(i), line.indexOf(word));
+								return notifyInvalidToken(word, lineNums.get(i), line.indexOf(word));
 							}
 							decimal = true;
 						} else if (Character.isLetter(word.charAt(k))) {
-							notifyInvalidToken(word, lineNums.get(i), line.indexOf(word));
-						} else {
+							return notifyInvalidToken(word, lineNums.get(i), line.indexOf(word));
+						} else { // handsles cases with no spaces, ex. word = "123+456"
 							ret.add(new Token(word.substring(0, k),
 									decimal ? TokenType.FLOAT_LITERAL : TokenType.INT_LITERAL, lineNums.get(i)));
 							word = word.substring(k);
@@ -66,7 +67,7 @@ public class Lexer {
 						ret.add(new Token(word, decimal ? TokenType.FLOAT_LITERAL : TokenType.INT_LITERAL,
 								lineNums.get(i)));
 					}
-				} else if (Character.isLetter(word.charAt(0))) {
+				} else if (Character.isLetter(word.charAt(0))) { // identifier
 					for (int k = 1; k < word.length(); k++) {
 						if (!Character.isLetter(word.charAt(k)) && !Character.isDigit(word.charAt(k))) {
 							ret.add(new Token(word.substring(0, k), TokenType.IDENTIFIER, lineNums.get(i)));
@@ -78,7 +79,7 @@ public class Lexer {
 					if (next) {
 						ret.add(new Token(word, TokenType.IDENTIFIER, lineNums.get(i)));
 					}
-				} else if (word.charAt(0) == '"') {
+				} else if (word.charAt(0) == '"') { // String literal - already checked handled errors in checkBalance
 					for (int k = 1; k < word.length(); k++) {
 						if (word.charAt(k) == '"' && word.charAt(k - 1) != '\\') {
 							ret.add(new Token(word.substring(0, k), TokenType.STRING_LITERAL, lineNums.get(i)));
@@ -87,7 +88,7 @@ public class Lexer {
 							break;
 						}
 					}
-					if (next) {
+					if (next) { // check original line to correctly handle multiple spaces
 						int indexHere = quoteOffset + line.substring(quoteOffset).indexOf(word);
 						quoteOffset = indexHere + word.length();
 						do {
@@ -98,8 +99,8 @@ public class Lexer {
 						words = line.substring(quoteOffset).split(" ");
 						j = -1;
 					}
-				} else if (word.charAt(0) == '\'') {
-					for (int k = 1; k < word.length(); k++) {
+				} else if (word.charAt(0) == '\'') { // char literal
+                    for (int k = 1; k < word.length(); k++) {
 						if (word.charAt(k) == '\'' && word.charAt(k - 1) != '\\') {
 							ret.add(new Token(word.substring(0, k + 1), TokenType.CHAR_LITERAL, lineNums.get(i)));
 							word = word.substring(k + 1);
@@ -107,12 +108,12 @@ public class Lexer {
 							break;
 						}
 					}
-					if (next) {
+					if (next) { // assume ' '
 						ret.add(new Token(word + " \'", TokenType.CHAR_LITERAL, lineNums.get(i)));
                         for (; words[j + 1].length() == 0; j++);
                         words[j + 1] = words[j + 1].substring(1);
 					}
-				} else {
+				} else { // symbol
 					ret.add(new Token("" + word.charAt(0), TokenType.SYMBOL, lineNums.get(i)));
 					next = false;
 					word = word.substring(1);
@@ -122,6 +123,7 @@ public class Lexer {
         return ret;
 	}
 
+    // Return scanner with file name or error code: null
 	private Scanner getScanner(String filename) {
 		try {
 			return new Scanner(new File(filename));
@@ -132,21 +134,23 @@ public class Lexer {
 	}
 
 
+    // Return error value from lex and notifys user specific location of error
 	public List<Token> notifyInvalidToken(String word, int lineNumber, int charNumber) {
 		System.out.println("Invalid token: \"" + word + "\" at " + lineNumber + ":" + charNumber);
 		return new LinkedList<Token>();
 	}
 
 	// Checks for balanced parentheses and quotes: [], {}, () ""
-	// TODO: Parse out comments and store result in code
+    // Parses out comments
+    // Stores parsed lines in List<String> code
 	 boolean checkBalance(Scanner s, List<String> code, List<Integer> lineNums) {
 		if (s == null) {
 			return false;
 		}
-		boolean quote = false;
-		boolean comment = false;
-		Stack<Character> parens = new Stack<>();
-		Stack<String> locations = new Stack<>();
+		boolean quote = false; // true when current code is part of a quotation
+		boolean comment = false; // true when current code is part of a multi-line comment
+		Stack<Character> parens = new Stack<>(); // stores {, [, (
+		Stack<String> locations = new Stack<>(); // stores locations of {,[,( 
 		String line = "";
 		for (int lineNumber = 0; s.hasNextLine(); lineNumber++, line = ' ' + s.nextLine() + ' ') {
 			StringBuilder parsedLine = new StringBuilder();
@@ -159,28 +163,27 @@ public class Lexer {
 					}
 					continue;
 				}
-				if (prev == '\'' && line.charAt(charNumber + 1) == '\'') {
-				} // character is a char literal
-				else if (c == '"' && prev != '\\') {
+				if (prev == '\'' && line.charAt(charNumber + 1) == '\'') { // character is a char literal
+				} else if (c == '"' && prev != '\\') { // flip quote
 					quote = !quote;
-				} else if (quote) {
-				} else if (c == '/' && prev == '/') {
+				} else if (quote) { // do nothing if character is in the middle of a current quote
+				} else if (c == '/' && prev == '/') { // ignore rest of line for beginning of comment
 					parsedLine.deleteCharAt(parsedLine.length() - 1);
 					break;
-				} else if (c == '*' && prev == '/') {
+				} else if (c == '*' && prev == '/') { // start of /* comment
 					parsedLine.deleteCharAt(parsedLine.length() - 1);
 					comment = true;
 					continue;
-				} else if (c == '{' || c == '[' || c == '(') {
+				} else if (c == '{' || c == '[' || c == '(') { // open parens
 					parens.push(c);
 					locations.push(lineNumber + ":" + charNumber);
-				} else if (c == '}' || c == ']' || c == ')') {
+				} else if (c == '}' || c == ']' || c == ')') { // closed parens
 					if (parens.size() == 0) {
 						System.out.println("Error: Found unexpected '" + c + "' at " + lineNumber + ":" + charNumber);
 						return false;
 					}
 					char paren = parens.pop();
-					if (Math.abs(c - paren) > 2) { // unbalanced case
+					if (Math.abs(c - paren) > 2) { // unmatched case
 						System.out.println("Error: '" + paren + "' opened at " + locations.pop() + " closed with '" + c
 								+ "' at " + lineNumber + ":" + charNumber);
 						return false;
@@ -189,7 +192,7 @@ public class Lexer {
 				}
 				parsedLine.append(c);
 			}
-			if (quote) {
+			if (quote) { // quotations must end on the same line
 				System.out.println("Error: Unclosed quotation mark on line " + lineNumber);
 				return false;
 			}
