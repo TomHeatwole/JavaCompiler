@@ -20,6 +20,7 @@ public class Lexer {
     public List<Token> lex(String fileName) {
         // TODO: Maybe add char # to token using quoteOffset 
         // TODO: Maybe hash keywords instead of binary search? - probably not neccesary due to problem size
+        // TODO: Reimplement the way \ are handled to be consistent with limitations.txt
         ArrayList<String> code = new ArrayList<>();
 		ArrayList<Integer> lineNums = new ArrayList<>(); // lineNums[significant line #] = original line #
 		if (!checkBalance(getScanner(fileName), code, lineNums)) {

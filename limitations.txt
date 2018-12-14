@@ -1,0 +1,5 @@
+- Lexer will parse any number of spaces in char literal as ' '
+    - example: '      ' will be parsed as ' '
+
+- Lexer will parse \ followed by any character as a valid char
+
