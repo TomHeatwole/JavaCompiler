@@ -14,4 +14,4 @@ Coming soon.
 `./assemble_link_run <name_of_x86_file>`
 
 ## Limitations
-Although the list is far from complete, a list of limitations of this compiler will be stored in limitations.txt
+Although the list is far from complete, a list of limitations of this compiler will be stored in [limitations.txt](https://github.com/TomHeatwole/JavaCompiler/blob/master/limitations.txt).
