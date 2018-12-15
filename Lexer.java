@@ -20,7 +20,6 @@ public class Lexer {
     public List<Token> lex(String fileName) {
         // TODO: Maybe add char # to token using quoteOffset 
         // TODO: Maybe hash keywords instead of binary search? - probably not neccesary due to problem size
-        // TODO: BUG: Semicolons parsed to incorrect line sometimes
         ArrayList<String> code = new ArrayList<>();
 		ArrayList<Integer> lineNums = new ArrayList<>(); // lineNums[significant line #] = original line #
 		if (!checkBalance(getScanner(fileName), code, lineNums)) {
@@ -29,12 +28,16 @@ public class Lexer {
 		ArrayList<Token> ret = new ArrayList<>(); // return value
 		String word = "";
 		boolean next = true; // true when lexer is ready for next word in line split on " "
+        int lineNumber = 0;
 		for (int i = 0; i < code.size(); i++) {
 			int quoteOffset = 0;
 			String line = code.get(i);
 			String[] words = line.split(" ");
 			for (int j = 0; j < words.length; j++) {
 				if (next) {
+                    if (lineNumber != i) {
+                        lineNumber = i;
+                    }
 					word = words[j];
 				} else {
 					j--;
@@ -44,7 +47,7 @@ public class Lexer {
 					continue;
 				}
 				if (Arrays.binarySearch(keywords, word) > 0) { // keyword
-					ret.add(new Token(word, TokenType.KEYWORD, lineNums.get(i)));
+					ret.add(new Token(word, TokenType.KEYWORD, lineNums.get(lineNumber)));
 				} else if (Character.isDigit(word.charAt(0))) { // number literal or error
 					boolean decimal = false;
 					for (int k = 1; k < word.length(); k++) {
@@ -53,14 +56,14 @@ public class Lexer {
 						}
 						if (word.charAt(k) == '.') {
 							if (decimal) {
-								return notifyInvalidToken(word, lineNums.get(i), line.indexOf(word));
+								return notifyInvalidToken(word, lineNums.get(lineNumber), line.indexOf(word));
 							}
 							decimal = true;
 						} else if (Character.isLetter(word.charAt(k))) {
-							return notifyInvalidToken(word, lineNums.get(i), line.indexOf(word));
+							return notifyInvalidToken(word, lineNums.get(lineNumber), line.indexOf(word));
 						} else { // handles cases with no spaces, ex. word = "123+456"
 							ret.add(new Token(word.substring(0, k),
-									decimal ? TokenType.FLOAT_LITERAL : TokenType.INT_LITERAL, lineNums.get(i)));
+									decimal ? TokenType.FLOAT_LITERAL : TokenType.INT_LITERAL, lineNums.get(lineNumber)));
 							word = word.substring(k);
 							next = false;
 							break;
@@ -68,24 +71,24 @@ public class Lexer {
 					}
 					if (next) {
 						ret.add(new Token(word, decimal ? TokenType.FLOAT_LITERAL : TokenType.INT_LITERAL,
-								lineNums.get(i)));
+								lineNums.get(lineNumber)));
 					}
 				} else if (Character.isLetter(word.charAt(0))) { // identifier
 					for (int k = 1; k < word.length(); k++) {
 						if (!Character.isLetter(word.charAt(k)) && !Character.isDigit(word.charAt(k))) {
-							ret.add(new Token(word.substring(0, k), TokenType.IDENTIFIER, lineNums.get(i)));
+							ret.add(new Token(word.substring(0, k), TokenType.IDENTIFIER, lineNums.get(lineNumber)));
 							word = word.substring(k);
 							next = false;
 							break;
 						}
 					}
 					if (next) {
-						ret.add(new Token(word, TokenType.IDENTIFIER, lineNums.get(i)));
+						ret.add(new Token(word, TokenType.IDENTIFIER, lineNums.get(lineNumber)));
 					}
 				} else if (word.charAt(0) == '"') { // string literal - already handled errors in checkBalance
 					for (int k = 1; k < word.length(); k++) {
 						if (word.charAt(k) == '"' && checkEndString(word, k - 1)) {
-							ret.add(new Token(word.substring(0, k + 1), TokenType.STRING_LITERAL, lineNums.get(i)));
+							ret.add(new Token(word.substring(0, k + 1), TokenType.STRING_LITERAL, lineNums.get(lineNumber)));
 							word = word.substring(k + 1);
 							next = false;
 							break;
@@ -98,26 +101,26 @@ public class Lexer {
 							quoteOffset += line.substring(quoteOffset).indexOf('"') + 1;
 						} while (!checkEndString(line, quoteOffset - 2));
 						ret.add(new Token(line.substring(indexHere, quoteOffset), TokenType.STRING_LITERAL,
-								lineNums.get(i)));
+								lineNums.get(lineNumber)));
 						words = line.substring(quoteOffset).split(" ");
 						j = -1;
 					}
 				} else if (word.charAt(0) == '\'') { // char literal
                     for (int k = 1; k < word.length(); k++) {
 						if (word.charAt(k) == '\'' && (word.charAt(k - 1) != '\\' || word.charAt(k - 2) == '\\')) {
-							ret.add(new Token(word.substring(0, k + 1), TokenType.CHAR_LITERAL, lineNums.get(i)));
+							ret.add(new Token(word.substring(0, k + 1), TokenType.CHAR_LITERAL, lineNums.get(lineNumber)));
 							word = word.substring(k + 1);
 							next = false;
 							break;
 						}
 					}
 					if (next) { // assume ' '
-						ret.add(new Token(word + " \'", TokenType.CHAR_LITERAL, lineNums.get(i)));
+						ret.add(new Token(word + " \'", TokenType.CHAR_LITERAL, lineNums.get(lineNumber)));
                         for (; words[j + 1].length() == 0; j++);
                         words[j + 1] = words[j + 1].substring(1);
 					}
 				} else { // symbol
-					ret.add(new Token("" + word.charAt(0), TokenType.SYMBOL, lineNums.get(i)));
+					ret.add(new Token("" + word.charAt(0), TokenType.SYMBOL, lineNums.get(lineNumber)));
 					next = false;
 					word = word.substring(1);
 				}
