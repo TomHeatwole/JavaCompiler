@@ -22,9 +22,10 @@ public class Compile {
 		if (tokens.size() == 0) {
 			return;
 		}
-        for (int i = 0; i < tokens.size(); i++) {
+        Token prev = tokens.get(0);
+        for (int i = 1; i < tokens.size(); i++) {
             Token t = tokens.get(i);
-            System.out.println(t.lineNumber +  " " + t.type + " " + t.value);
+            System.out.println(t.lineNumber + " " + t.type + " " + t.value);
         }
 
         // Parse

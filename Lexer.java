@@ -20,7 +20,7 @@ public class Lexer {
     public List<Token> lex(String fileName) {
         // TODO: Maybe add char # to token using quoteOffset 
         // TODO: Maybe hash keywords instead of binary search? - probably not neccesary due to problem size
-        // TODO: Reimplement the way \ are handled to be consistent with limitations.txt
+        // TODO: BUG: Semicolons parsed to incorrect line sometimes
         ArrayList<String> code = new ArrayList<>();
 		ArrayList<Integer> lineNums = new ArrayList<>(); // lineNums[significant line #] = original line #
 		if (!checkBalance(getScanner(fileName), code, lineNums)) {
@@ -82,9 +82,9 @@ public class Lexer {
 					if (next) {
 						ret.add(new Token(word, TokenType.IDENTIFIER, lineNums.get(i)));
 					}
-				} else if (word.charAt(0) == '"') { // String literal - already handled errors in checkBalance
+				} else if (word.charAt(0) == '"') { // string literal - already handled errors in checkBalance
 					for (int k = 1; k < word.length(); k++) {
-						if (word.charAt(k) == '"' && word.charAt(k - 1) != '\\') {
+						if (word.charAt(k) == '"' && checkEndString(word, k - 1)) {
 							ret.add(new Token(word.substring(0, k + 1), TokenType.STRING_LITERAL, lineNums.get(i)));
 							word = word.substring(k + 1);
 							next = false;
@@ -96,7 +96,7 @@ public class Lexer {
 						quoteOffset = indexHere + word.length();
 						do {
 							quoteOffset += line.substring(quoteOffset).indexOf('"') + 1;
-						} while (line.charAt(quoteOffset - 2) == '\\');
+						} while (!checkEndString(line, quoteOffset - 2));
 						ret.add(new Token(line.substring(indexHere, quoteOffset), TokenType.STRING_LITERAL,
 								lineNums.get(i)));
 						words = line.substring(quoteOffset).split(" ");
@@ -124,7 +124,7 @@ public class Lexer {
 			}
 		}
         for (int i = 0; i < ret.size(); i++) {
-            if (ret.get(i).value.length() == 0 || ret.get(i).value.charAt(0) == 9) {
+            if (ret.get(i).value.length() == 0 || ret.get(i).value.charAt(0) == 9) { // handle tab edge case
                 ret.remove(i);
                 i--;
             }
@@ -149,6 +149,16 @@ public class Lexer {
 		return new LinkedList<Token>();
 	}
 
+    // Return whether a given quotation mark should end a string literal.
+    // Example : \\" should end string, but \\\" should not
+    private boolean checkEndString(String word, int index) {
+        boolean evenSlashCount = true;
+        for (int offset = 0; word.charAt(index + offset) == '\\'; offset--) {
+            evenSlashCount = !evenSlashCount;
+        }
+        return evenSlashCount;
+    }
+
     // Checks for balanced parentheses and quotes: [], {}, () ""
     // Parses out comments
     // Stores parsed lines in List<String> code
@@ -172,8 +182,12 @@ public class Lexer {
 					}
 					continue;
 				}
+                if (quote && c == '\\' && charNumber < line.length() - 1) { // parse any \. as a valid char for now
+                    parsedLine.append("" + c + line.charAt(++charNumber));
+                    continue;
+                }
 				if (prev == '\'' && line.charAt(charNumber + 1) == '\'') { // character is a char literal
-				} else if (c == '"' && prev != '\\') { // flip quote
+				} else if (c == '"') { // flip quote
 					quote = !quote;
 				} else if (quote) { // do nothing if character is in the middle of a current quote
 				} else if (c == '/' && prev == '/') { // ignore rest of line for beginning of comment
@@ -181,7 +195,7 @@ public class Lexer {
 					break;
 				} else if (c == '*' && prev == '/') { // start of /* comment
 					parsedLine.deleteCharAt(parsedLine.length() - 1);
-					comment = true;
+				comment = true;
 					continue;
 				} else if (c == '{' || c == '[' || c == '(') { // open parens
 					parens.push(c);
