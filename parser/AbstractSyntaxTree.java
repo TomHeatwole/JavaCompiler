@@ -5,6 +5,7 @@ public abstract class AbstractSyntaxTree {
 
     public AbstractSyntaxTree(AbstractSyntaxTree parent){
         this.parent = parent;
+        this.children = new AbstractSyntaxTree[0];
     }
 
     abstract public int populate(Token[] tokens, int location);
@@ -15,6 +16,15 @@ public abstract class AbstractSyntaxTree {
 
     public AbstractSyntaxTree getParent() {
         return this.parent;
+    }
+
+    // For Debugging
+    public String toString() {
+        String ret = "";
+        for (int i = 0; i < children.length; i++) {
+            ret += i + " " + children[i] + "\n";
+        }
+        return ret;
     }
 }
 

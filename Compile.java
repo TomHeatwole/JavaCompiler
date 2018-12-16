@@ -20,14 +20,13 @@ public class Compile {
 		if (tokens.length == 0) {
 			return;
 		}
-
         // Parse
         Program p = new Program(null);
         if (p.populate(tokens, 0) == -1) {
             System.out.println("FAILED");
             return;
         }
-        System.out.println("Success.");
+        System.out.println(p);
 	}
 }
 

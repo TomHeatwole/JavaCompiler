@@ -12,10 +12,12 @@ public class Program extends AbstractSyntaxTree {
 
     public int populate(Token[] tokens, int location) {
         // TODO: Allow imports before class declaration
-        ItemWithHeader c = null; // will get set correctly by parseHeader
-        int next = Parser.parseHeader(tokens, 0, parent, c);
+        //ItemWithHeader c = new Class(null); // will get set correctly by parseHeader
+        ItemWithHeader[] child = new ItemWithHeader[1];
+        int next = Parser.parseHeader(tokens, 0, parent, child);
         children = new AbstractSyntaxTree[1];
-        children[0] = c;
+        children[0] = child[0];
+        //TODO: support another class int he same file
         return (next != -1 && tokens[next].equals(terminalToken)) ? ++next : -1;
     }
 

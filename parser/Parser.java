@@ -41,7 +41,7 @@ public class Parser {
         return -1;
     }
 
-    public static int parseHeader(Token[] tokens, int location, AbstractSyntaxTree parent, ItemWithHeader child) {
+    public static int parseHeader(Token[] tokens, int location, AbstractSyntaxTree parent, ItemWithHeader[] child) {
         String accessModifier = "";
         boolean isAbstract = false;
         boolean isStatic = false;
@@ -54,8 +54,8 @@ public class Parser {
                 if (!Parser.customTypes.contains(t.getValue())) {
                     return Parser.notifyInvalid("Unrecognized type: \"" + t.getValue() + "\"", t.getLineNumber());
                 }
-                child = new Method(parent);
-                child.setType(t.getValue());
+                child[0] = new Method(parent);
+                child[0].setType(t.getValue());
                 break;
             }
             if (Parser.accessModifiers.contains(t.getValue())) {
@@ -74,28 +74,27 @@ public class Parser {
                 }
                 isStatic = true;
             } else if (Parser.classTypes.contains(t.getValue())) {
-                child = new Class(parent);
-                child.setType(t.getValue());
+                child[0] = new Class(parent);
+                child[0].setType(t.getValue());
                 break;
             } else if (Parser.primitiveTypes.contains(t.getValue()) || t.getValue().equals("void")) {
-                child = new Method(parent);
-                child.setType(t.getValue());
+                child[0] = new Method(parent);
+                child[0].setType(t.getValue());
                 break;
             } else {
                 return Parser.notifyInvalid("Unexpected token: \"" + t.getValue() + "\"", t.getLineNumber());
             }
         }
-        child.setAccessModifier(accessModifier);
-        child.setAbstract(isAbstract);
-        child.setStatic(isStatic);
+        child[0].setAccessModifier(accessModifier);
+        child[0].setAbstract(isAbstract);
+        child[0].setStatic(isStatic);
         // parse name
         Token t = tokens[++location];
         if (t.getType() != TokenType.IDENTIFIER) {
             return Parser.notifyInvalid("Expected identifier but found \"" + t.getValue() + "\"", t.getLineNumber());
         }
-        child.setName(t.getValue());
-
-        return child.populate(tokens, ++location);
+        child[0].setName(t.getValue());
+        return child[0].populate(tokens, ++location);
     }
 }
 
