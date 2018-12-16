@@ -8,7 +8,7 @@ public class Parser {
     public static HashSet<String> classTypes;
     public static HashSet<String> primitiveTypes;
     public static HashSet<String> customTypes;
-    // TODO: keep track of non-primitive types and update as we parse class types
+    // TODO: keep track of class variables HashSet[class & name & params] 
 
     static {
         accessModifiers = new HashSet<String>();
@@ -88,6 +88,13 @@ public class Parser {
         child.setAccessModifier(accessModifier);
         child.setAbstract(isAbstract);
         child.setStatic(isStatic);
+        // parse name
+        Token t = tokens[++location];
+        if (t.getType() != TokenType.IDENTIFIER) {
+            return Parser.notifyInvalid("Expected identifier but found \"" + t.getValue() + "\"", t.getLineNumber());
+        }
+        child.setName(t.getValue());
+
         return child.populate(tokens, ++location);
     }
 }

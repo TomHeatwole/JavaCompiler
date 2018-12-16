@@ -7,6 +7,7 @@ public class Class extends ItemWithHeader {
     private String type; // abstract/interface/class
     private boolean isAbstract;
     private String name;
+    private int mainMethodIndex;
 
     static {
         terminalToken = new Token("}", TokenType.SYMBOL);
@@ -14,6 +15,7 @@ public class Class extends ItemWithHeader {
 
     public Class(AbstractSyntaxTree parent) {
         super(parent);
+        this.mainMethodIndex = -1;
     }
 
     public String getPrivacy() {
@@ -32,20 +34,22 @@ public class Class extends ItemWithHeader {
         return this.name;
     }
 
-    // location should start on class name
+    public boolean hasMain() {
+        return this.mainMethodIndex > -1;
+    }
+
+    // index in children[] of main method or -1 if it doesn't exist
+    public int getMainIndex() {
+        return this.mainMethodIndex;
+    }
+
+    // location should start on {
     public int populate(Token[] tokens, int location) {
         LinkedList<AbstractSyntaxTree> childrenList = new LinkedList<>();
 
-        // parse class name
-        Token t = tokens[location];
-        if (t.getType() != TokenType.IDENTIFIER) {
-            return Parser.notifyInvalid("Expected class name but found \"" + t.getValue() + "\"", t.getLineNumber());
-        }
-        this.name = t.getValue();
-
         // TODO: Accept extends and implements
         // parse class body
-        t = tokens[++location];
+        Token t = tokens[location];
         if (t.getType() != TokenType.SYMBOL || !t.getValue().equals("{")) {
             return Parser.notifyInvalid("Expected '{', but found \"" + t.getValue() + "\"", t.getLineNumber());
         }
@@ -57,6 +61,12 @@ public class Class extends ItemWithHeader {
                 return -1;
             }
             childrenList.add(child);
+            if (child instanceof Method) {
+                Method m = (Method)child;
+                if (m.isMain()) {
+                    mainMethodIndex = childrenList.size() - 1;
+                }
+            }
         }
         children = new AbstractSyntaxTree[childrenList.size()];
         childrenList.toArray(children);

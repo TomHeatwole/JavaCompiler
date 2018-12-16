@@ -1,10 +1,10 @@
 public abstract class ItemWithHeader extends AbstractSyntaxTree {
 
-    private String accessModifier;
-    private String type; // abstract/interface/class
-    private boolean isAbstract;
-    private boolean isStatic;
-    private String name;
+    String accessModifier;
+    String type; // abstract/interface/class
+    boolean isAbstract;
+    boolean isStatic;
+    String name;
 
     public ItemWithHeader(AbstractSyntaxTree parent){
         super(parent);
@@ -44,5 +44,9 @@ public abstract class ItemWithHeader extends AbstractSyntaxTree {
 
     public void setStatic(boolean isStatic) {
         this.isStatic = isStatic;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
