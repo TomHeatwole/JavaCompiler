@@ -17,7 +17,7 @@ public class Method extends ItemWithHeader {
     }
 
     public boolean isMain() {
-        return this.isMain();
+        return this.isMain;
     }
 
     // location should start on "("

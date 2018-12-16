@@ -1,10 +1,10 @@
 public abstract class ItemWithHeader extends AbstractSyntaxTree {
 
-    String accessModifier;
-    String type; // abstract/interface/class
-    boolean isAbstract;
-    boolean isStatic;
-    String name;
+    protected String accessModifier;
+    protected String type; // abstract/interface/class
+    protected boolean isAbstract;
+    protected boolean isStatic;
+    protected String name;
 
     public ItemWithHeader(AbstractSyntaxTree parent){
         super(parent);

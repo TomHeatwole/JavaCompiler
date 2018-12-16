@@ -1,7 +1,7 @@
 public abstract class AbstractSyntaxTree {
 
-    AbstractSyntaxTree[] children;
-    AbstractSyntaxTree parent;
+    protected AbstractSyntaxTree[] children;
+    protected AbstractSyntaxTree parent;
 
     public AbstractSyntaxTree(AbstractSyntaxTree parent){
         this.parent = parent;
@@ -11,6 +11,10 @@ public abstract class AbstractSyntaxTree {
 
     public AbstractSyntaxTree[] getChildren() {
         return this.children;
+    }
+
+    public AbstractSyntaxTree getParent() {
+        return this.parent;
     }
 }
 
