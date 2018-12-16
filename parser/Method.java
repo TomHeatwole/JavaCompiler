@@ -1,6 +1,6 @@
 // TODO: another class (maybe abstract) for objectWithHeader
 
-public class Method extends AbstractSyntaxTree {
+public class Method extends ItemWithHeader {
 
     private static Token terminalToken;
 
