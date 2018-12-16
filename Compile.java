@@ -1,5 +1,3 @@
-import java.util.List;
-
 public class Compile {
 
 	public static void main(String[] args) {
@@ -18,17 +16,17 @@ public class Compile {
 				"super", "switch", "synchronized", "this", "throw", "throws", "transient", "true", "try", "void",
 				"volatile", "while" };
         Lexer l = new Lexer(javaKeywords);
-		List<Token> tokens = l.lex(args[0]);
-		if (tokens.size() == 0) {
+		Token[] tokens = l.lex(args[0]);
+		if (tokens.length == 0) {
 			return;
 		}
-        Token prev = tokens.get(0);
-        for (int i = 1; i < tokens.size(); i++) {
-            Token t = tokens.get(i);
-            System.out.println(t.lineNumber + " " + t.type + " " + t.value);
+
+        for (int i = 0; i < tokens.length; i++) {
+            System.out.println(tokens[i]);
         }
 
         // Parse
         // TODO
 	}
 }
+

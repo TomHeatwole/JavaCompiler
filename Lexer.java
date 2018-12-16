@@ -4,7 +4,6 @@ import java.util.Scanner;
 import java.util.Stack;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.Arrays;
 
 public class Lexer {
@@ -17,13 +16,14 @@ public class Lexer {
     }
 
     // Return empty list on error
-    public List<Token> lex(String fileName) {
+    public Token[] lex(String fileName) {
         // TODO: Maybe add char # to token using quoteOffset 
         // TODO: Maybe hash keywords instead of binary search? - probably not neccesary due to problem size
+        // TODO: Bug Fix: Doesn't parse last line if there's no empty line at the end of the file
         ArrayList<String> code = new ArrayList<>();
 		ArrayList<Integer> lineNums = new ArrayList<>(); // lineNums[significant line #] = original line #
 		if (!checkBalance(getScanner(fileName), code, lineNums)) {
-			return new LinkedList<Token>();
+			return new Token[0];
 		}
 		ArrayList<Token> ret = new ArrayList<>(); // return value
 		String word = "";
@@ -127,12 +127,14 @@ public class Lexer {
 			}
 		}
         for (int i = 0; i < ret.size(); i++) {
-            if (ret.get(i).value.length() == 0 || ret.get(i).value.charAt(0) == 9) { // handle tab edge case
+            if (ret.get(i).getValue().length() == 0 || ret.get(i).getValue().charAt(0) == 9) { // handle tab edge case
                 ret.remove(i);
                 i--;
             }
         }
-        return ret;
+        Token[] retArray = new Token[ret.size()];
+        ret.toArray(retArray);
+        return retArray;
 	}
 
     // Return scanner with file name or error code: null
@@ -147,9 +149,9 @@ public class Lexer {
 
 
     // Return error value from lex and notifys user specific location of error
-	private List<Token> notifyInvalidToken(String word, int lineNumber, int charNumber) {
+	private Token[] notifyInvalidToken(String word, int lineNumber, int charNumber) {
 		System.out.println("Invalid token: \"" + word + "\" at " + lineNumber + ":" + charNumber);
-		return new LinkedList<Token>();
+		return new Token[0];
 	}
 
     // Return whether a given quotation mark should end a string literal.
