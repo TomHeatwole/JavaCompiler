@@ -21,12 +21,13 @@ public class Compile {
 			return;
 		}
 
-        for (int i = 0; i < tokens.length; i++) {
-            System.out.println(tokens[i]);
-        }
-
         // Parse
-        // TODO
+        Program p = new Program(null);
+        if (p.populate(tokens, 0) == -1) {
+            System.out.println("FAILED");
+            return;
+        }
+        System.out.println("Success.");
 	}
 }
 

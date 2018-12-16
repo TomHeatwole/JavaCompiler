@@ -132,6 +132,7 @@ public class Lexer {
                 i--;
             }
         }
+        ret.add(new Token("", TokenType.EOF, 0));
         Token[] retArray = new Token[ret.size()];
         ret.toArray(retArray);
         return retArray;

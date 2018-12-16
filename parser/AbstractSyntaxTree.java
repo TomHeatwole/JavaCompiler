@@ -1,10 +1,13 @@
 public abstract class AbstractSyntaxTree {
 
-    private AbstractSyntaxTree[] children;
-    private Token terminalToken;
-    public boolean valid;
+    AbstractSyntaxTree[] children;
+    AbstractSyntaxTree parent;
 
-    public AbstractSyntaxTree(Token[] tokens, int location); 
+    public AbstractSyntaxTree(AbstractSyntaxTree parent){
+        this.parent = parent;
+    }
+
+    abstract public int populate(Token[] tokens, int location);
 
     public AbstractSyntaxTree[] getChildren() {
         return this.children;
