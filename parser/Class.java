@@ -3,13 +3,9 @@ import java.util.LinkedList;
 public class Class extends AbstractSyntaxTree {
 
     private static Token terminalToken;
-
     private String accessModifier;
-
     private String type; // abstract/interface/class
-
     private boolean isAbstract;
-
     private String name;
 
     static {
