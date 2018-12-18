@@ -1,16 +1,8 @@
-// TODO: another class (maybe abstract) for objectWithHeader
-
 public class Method extends ItemWithHeader {
-
-    private static Token terminalToken;
 
     private boolean isMain;
 
     // TODO: Store params
-
-    static {
-        terminalToken = new Token("}", TokenType.SYMBOL);
-    }
 
     public Method(AbstractSyntaxTree parent) {
         super(parent);
@@ -38,13 +30,17 @@ public class Method extends ItemWithHeader {
             isMain = true;
         }
 
-        // TODO: parse method body
-        for (;;location++) if (tokens[location].getValue().equals("}")) return ++location;
-
-
-
-
-
-
+        t = tokens[++location];
+        if (t.getType() != TokenType.SYMBOL || (!t.getValue().equals("{") && !t.getValue().equals(";"))) {
+            return Parser.notifyInvalid("Found unexpected token: \"" + t.getValue() + "\"", t.getLineNumber());
+        }
+        if (t.getValue().equals(";")) {
+            children = new AbstractSyntaxTree[0];
+            return ++location;
+        }
+        // else value = "{"
+        children = new AbstractSyntaxTree[1];
+        children[0] = new Block(this);
+        return children[0].populate(tokens, location);
     }
 }
