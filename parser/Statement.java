@@ -15,7 +15,7 @@ public class Statement extends AbstractSyntaxTree {
         // TODO: Way more parsing, make a parseStatement in Parser, maybe ditch this class completely and
         // have classes for different types of statements like we did for itemWithHeader. Also statement
         // might not be the best word since I'm thinking loops fall under this category
-        System.out.println(tokens[location].getValue());
+        Token r = new Token("return", TokenType.KEYWORD);
         if (!tokens[location].equals(r)) {
             return -1;
         }
