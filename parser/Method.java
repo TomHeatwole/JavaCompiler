@@ -41,6 +41,6 @@ public class Method extends ItemWithHeader {
         // else value = "{"
         children = new AbstractSyntaxTree[1];
         children[0] = new Block(this);
-        return children[0].populate(tokens, location);
+        return children[0].populate(tokens, ++location);
     }
 }

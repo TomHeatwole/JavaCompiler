@@ -13,13 +13,18 @@ public class Block extends AbstractSyntaxTree {
     }
 
     public int populate(Token[] tokens, int location) {
-        /*
-         * TODO: Parse list of statements
         LinkedList<AbstractSyntaxTree> childrenList = new LinkedList<>();
-
-        while (!location.equals
-        */
-        for (;;location++) if (tokens[location].equals(terminalToken)) return ++location;
+        while (!tokens[location].equals(terminalToken)) {
+            Statement s = new Statement(this);
+            location = s.populate(tokens, location);
+            if (location < 0) {
+                return -1;
+            }
+            childrenList.add(s);
+        }
+        children = new AbstractSyntaxTree[childrenList.size()];
+        childrenList.toArray(children);
+        return ++location;
     }
 }
 
