@@ -10,7 +10,7 @@ nasm -f macho64 $1 -o main.o || exit 1
 exec 3>&2
 exec 2> /dev/null
 #TODO: Print output when ld fails
-ld -e _main -macosx_version_min 10.8 -arch x86_64 main.o -lSystem
+ld -e _main -macosx_version_min 10.8 -arch x86_64 main.o -lSystem || exit 1
 exec 2>&3
 ./a.out
 rm main.o

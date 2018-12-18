@@ -15,6 +15,7 @@ public class Generator {
         try {
             writer = new BufferedWriter(new FileWriter(fileName));
             writer.write("LOL");
+            writer.write("LOL");
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();
