@@ -29,7 +29,7 @@ public class Compile {
         }
 
         // Generate
-        Generator g = new Generator(p);
+        Generator g = new GeneratorIntel(p);
         System.out.println(args[0]);
         g.generate(args[0].split("\\.")[0] + ".s");
 	}
