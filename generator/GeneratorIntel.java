@@ -3,8 +3,8 @@ import java.io.IOException;
 
 public class GeneratorIntel extends Generator {
 
-    public GeneratorIntel(AbstractSyntaxTree program) {
-        super(program);
+    public GeneratorIntel(AbstractSyntaxTree input) {
+        super(input);
     }
 
     public void write(String command, String dest, String src) throws IOException {
