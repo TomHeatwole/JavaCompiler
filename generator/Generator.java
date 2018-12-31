@@ -18,7 +18,7 @@ public abstract class Generator {
             write("mov", "eax", "rax");
             output.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Error: Failed to open file: " + fileName + " for reading.");
             return false;
         }
         return true;
