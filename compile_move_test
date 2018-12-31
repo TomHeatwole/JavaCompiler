@@ -1,0 +1,11 @@
+#!/bin/bash
+if [ "$#" -lt 1 ]; then
+    echo "Invalid number of arguments"
+    echo "Usage: ./compile_move_test <name_of_java_file>"
+    exit 1
+fi
+javac Compile.java lexer/*.java  parser/*.java generator/*.java
+mv parser/*.class ./
+mv lexer/*.class ./
+mv generator/*.class ./
+java Compile $1
