@@ -42,6 +42,14 @@ public class Class extends ItemWithHeader {
                 return -1;
             }
             childrenList.add(child[0]);
+            if (((Method)(child[0])).isMain()) {
+                if (mainMethodIndex == -1) {
+                    mainMethodIndex = childrenList.size() - 1;
+                } else {
+                    System.out.println("Error: multiple main methods found.");
+                    return -1;
+                }
+            }
         }
         children = new AbstractSyntaxTree[childrenList.size()];
         childrenList.toArray(children);

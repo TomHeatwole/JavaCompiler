@@ -2,4 +2,5 @@ a.out
 *Test.java
 Test.s
 *.class
+*.o
 todo.txt
