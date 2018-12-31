@@ -15,6 +15,8 @@ public abstract class Generator {
     public boolean generate(String fileName) {
         try {
             output = new BufferedWriter(new FileWriter(fileName));
+            // find main method
+            // TODO: Check hasMainMethod on input.chilren[0]
             write("mov", "eax", "rax");
             output.close();
         } catch (IOException e) {
