@@ -8,6 +8,10 @@ public class GeneratorIntel extends Generator {
     }
 
     public void write(String command, String dest, String src) throws IOException {
+        if (command.equals("ret")) { // TODO: All 0 and 1 param commands necessary
+            output.write("ret\n");
+            return;
+        }
         StringBuilder line = new StringBuilder(command);
         for (;line.length() < 8; line.append(' ')); // uniform spacing for dest, src
         line.append(dest);

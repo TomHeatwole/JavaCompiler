@@ -21,11 +21,28 @@ public abstract class Generator {
             try {
                 m = (Method)(c.getChildren()[c.getMainIndex()]);
             } catch (Exception e) {
-                e.printStackTrace();
                 System.out.println("Error: Only classes with main methods are currently supported.");
                 return false;
+            } 
+            // write main header
+            // write method's Block
+            writeLine("global _main\nsection .text\n_main:");
+            Block b = null;
+            try {
+                b = (Block)(m.getChildren()[0]);
+            } catch (Exception e) {
+                System.out.println("Error: No body found for main method.");
+                return false;
             }
-            write("mov", "eax", "rax");
+            Statement s = null;
+            try {
+                s = (Statement)(b.getChildren()[0]);
+            } catch (Exception e) {
+                System.out.println("Error: body found for main method.");
+                return false;
+            }
+            write("mov", "eax", "" + s.val);
+            write("ret", "", "");
             output.close();
         } catch (IOException e) {
             System.out.println("Error: Failed to open file: " + fileName + " for reading.");
@@ -34,6 +51,11 @@ public abstract class Generator {
         return true;
     }
 
-    public abstract void write(String command, String dest, String src) throws IOException;
+    protected abstract void write(String command, String dest, String src) throws IOException;
+
+    protected void writeLine(String line) throws IOException {
+        output.write(line);
+        output.write("\n");
+    }
 }
 
