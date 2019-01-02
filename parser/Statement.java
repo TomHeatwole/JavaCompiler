@@ -1,7 +1,7 @@
 public class Statement extends AbstractSyntaxTree {
 
     private static Token terminalToken;
-    public int val;
+    private StatementType type;
 
     static {
         terminalToken = new Token(";", TokenType.SYMBOL);
@@ -11,15 +11,23 @@ public class Statement extends AbstractSyntaxTree {
         super(parent);
     }
 
+    public StatementType getType() {
+        return type;
+    }
+
     public int populate(Token[] tokens, int location) {
-        // TODO: Way more parsing, make a parseStatement in Parser, maybe ditch this class completely and
-        // have classes for different types of statements like we did for itemWithHeader. Also statement
-        // might not be the best word since I'm thinking loops fall under this category.
+        // Examples:
+        // Return <exp>
+        // keyword name = <exp>
+        // name = <exp>
+        // if (cond) <exp>
+        // <exp>
         Token r = new Token("return", TokenType.KEYWORD);
         if (!tokens[location].equals(r)) {
             System.out.println("Error: We only support \"return <int_literal>;\" right now.");
             return -1;
         }
+        type = StatementType.RETURN;
         Token t = tokens[++location];
         if (t.getType() == TokenType.INT_LITERAL) {
             this.val = Integer.parseInt(t.getValue());
@@ -30,3 +38,4 @@ public class Statement extends AbstractSyntaxTree {
         return (tokens[++location].equals(terminalToken) ? ++location : -1);
     }
 }
+

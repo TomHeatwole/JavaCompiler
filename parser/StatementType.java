@@ -1,0 +1,3 @@
+public enum StatementType {
+    IF, FOR, WHILE, DO_WHILE, RETURN, EXPRESSION, ASSIGNMENT, REASSIGNMENT
+}
