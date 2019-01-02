@@ -20,6 +20,10 @@ public class Expression extends AbstractSyntaxTree {
         return binaryOperators;
     }
 
+    public void setTerminalToken(Token t) {
+        terminalToken = t;
+    }
+
     public int populate(Token[] tokens, int location) {
         Token t = tokens[location];
         if (t.getType() == TokenType.SYMBOL) {
@@ -27,17 +31,20 @@ public class Expression extends AbstractSyntaxTree {
                 // TODO: Set expression type as empty 
                 return location;
             }
+            children = new Expression[1];
+            children[0] = new Expression(this);
             if (!t.getValue().equals("(")) {
                 unaryOperator = t.getType();
                 children = new Expression[1];
                 children[0] = new Expression(this);
                 return children[0].populate(tokens, ++location);
             }
-            terminalToken = new Token(TokenType.SYMBOL, ")");
-            location++;
+            // TODO: set type as parentheses
+            children[0].setTerminalToken(new Token(TokenType.SYMBOL, ")"));
+            return children[0].populate(Tokens, ++location);
         }
-        // initialize lists
-        // for loop
+        // TODO: Process binary expressions. initialize lists, loop
+        return -1;
     }
 }
 
