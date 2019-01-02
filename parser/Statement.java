@@ -20,6 +20,8 @@ public class Statement extends AbstractSyntaxTree {
         // Return <exp>
         // keyword name = <exp>
         // name = <exp>
+        // name.name().name = <exp>
+        // int name
         // if (cond) <exp>
         // <exp>
         Token r = new Token("return", TokenType.KEYWORD);
