@@ -1,6 +1,7 @@
 // Utility variables and methods to assist with parsing
 
 import java.util.HashSet;
+import java.util.HashMap;
 
 public class Parser {
     
@@ -8,6 +9,9 @@ public class Parser {
     public static HashSet<String> classTypes;
     public static HashSet<String> primitiveTypes;
     public static HashSet<String> customTypes;
+    public static HashSet<String> unaryOperators;
+    public static HashMap<TokenType, ExpressionType> TokenTypeToExpressionType;
+    public static HashMap<ExpressionType, String> ExpressionTypeToReturnType;
     // TODO: keep track of class variables HashSet[class & name & params] 
 
     static {
@@ -15,6 +19,9 @@ public class Parser {
         classTypes = new HashSet<String>();
         primitiveTypes = new HashSet<String>();
         customTypes = new HashSet<String>();
+        unaryOperators = new HashSet<String>();
+        TokenTypeToExpressionType = new HashMap<TokenType, ExpressionType>();
+        ExpressionTypeToReturnType = new HashMap<ExpressionType, String>();
 
         accessModifiers.add("public");
         accessModifiers.add("private");
@@ -34,11 +41,31 @@ public class Parser {
         primitiveTypes.add("boolean");
 
         // TODO actually implement customTypes with access modifier settings
+        
+        unaryOperators.add("++");
+        unaryOperators.add("--");
+        unaryOperators.add("~");
+        unaryOperators.add("-");
+        unaryOperators.add("!");
+
+        TokenTypeToExpressionType.put(TokenType.STRING_LITERAL, ExpressionType.STRING_LITERAL);
+        TokenTypeToExpressionType.put(TokenType.INT_LITERAL, ExpressionType.INT_LITERAL);
+        TokenTypeToExpressionType.put(TokenType.CHAR_LITERAL, ExpressionType.CHAR_LITERAL);
+        TokenTypeToExpressionType.put(TokenType.FLOAT_LITERAL, ExpressionType.FLOAT_LITERAL);
+
+        ExpressionTypeToReturnType.put(ExpressionType.STRING_LITERAL, "String");
+        ExpressionTypeToReturnType.put(ExpressionType.CHAR_LITERAL, "char");
+        ExpressionTypeToReturnType.put(ExpressionType.INT_LITERAL, "int");
+        ExpressionTypeToReturnType.put(ExpressionType.FLOAT_LITERAL, "float");
     }
 
     public static int notifyInvalid(String message, int lineNumber) {
         System.out.println("Error: " + message + " on line " + lineNumber);
         return -1;
+    }
+
+    public static int notifyInvalidGeneric(Token t) {
+        return notifyInvalid("Unexpected token: " + t.getValue(), t.getLineNumber());
     }
 
     public static int parseHeader(Token[] tokens, int location, AbstractSyntaxTree parent, ItemWithHeader[] child) {
@@ -82,7 +109,7 @@ public class Parser {
                 child[0].setType(t.getValue());
                 break;
             } else {
-                return Parser.notifyInvalid("Unexpected token: \"" + t.getValue() + "\"", t.getLineNumber());
+                return Parser.notifyInvalidGeneric(t);
             }
         }
         child[0].setAccessModifier(accessModifier);

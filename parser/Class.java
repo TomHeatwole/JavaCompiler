@@ -35,7 +35,6 @@ public class Class extends ItemWithHeader {
         }
         ++location;
         while (!tokens[location].equals(terminalToken)) {
-//            ItemWithHeader child = new Class(null); // will get correctly populated inside parseHeader
             ItemWithHeader[] child = new ItemWithHeader[1];
             location = Parser.parseHeader(tokens, location, this, child);
             if (location == -1) {

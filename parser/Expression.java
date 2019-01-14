@@ -6,6 +6,7 @@ public class Expression extends AbstractSyntaxTree {
     private String unaryOperator;
     private String[] binaryOperators;
     private ExpressionType type;
+    private String returnType;
 
     public Expression(AbstractSyntaxTree parent) {
         super(parent);
@@ -20,6 +21,10 @@ public class Expression extends AbstractSyntaxTree {
 
     public String[] getBinaryTypes() {
         return binaryOperators;
+    }
+
+    public String getReturnType() {
+        return returnType;
     }
 
     public ExpressionType getType() {
@@ -40,21 +45,30 @@ public class Expression extends AbstractSyntaxTree {
             }
             children = new Expression[1];
             children[0] = new Expression(this);
-            if (!t.getValue().equals("(")) {
+            if (Parser.unaryOperators.contains(t.getValue())) {
                 type = ExpressionType.UNARY;
                 unaryOperator = t.getValue();
+                ((Expression)(children[0])).setTerminalToken(this.terminalToken);
                 return children[0].populate(tokens, ++location);
+            } else if (t.getValue().equals("(")) {
+                type = ExpressionType.PARENS;
+                ((Expression)(children[0])).setTerminalToken(new Token(")", TokenType.SYMBOL));
+            } else {
+                // TODO: Figure out if there are any valid cases remaining
+                return Parser.notifyInvalidGeneric(tokens[location]);
             }
-            type = ExpressionType.PARENS;
-            ((Expression)(children[0])).setTerminalToken(new Token(")", TokenType.SYMBOL));
-            return (children[0]).populate(tokens, ++location);
+            location = (children[0]).populate(tokens, ++location);
+            // TODO: Check that return types make sense on unary operator (or should we do this during gen?)
+            returnType = ((Expression)(children[0])).getReturnType();
+            return location;
         }
         location++;
         if (tokens[location + 1].equals(terminalToken)) {
-            switch(tokens[location].getType()) {
-                // parse literals and throw errors otherwise
-                // TODO
+            this.type = Parser.TokenTypeToExpressionType.get(tokens[location].getType());
+            if (type == null) {
+                return Parser.notifyInvalidGeneric(tokens[location]);
             }
+            this.returnType = Parser.ExpressionTypeToReturnType.get(this.type);
             return location + 1;
         }
         // TODO: Handle all binary stuff

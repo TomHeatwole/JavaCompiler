@@ -32,7 +32,7 @@ public class Method extends ItemWithHeader {
 
         t = tokens[++location];
         if (t.getType() != TokenType.SYMBOL || (!t.getValue().equals("{") && !t.getValue().equals(";"))) {
-            return Parser.notifyInvalid("Found unexpected token: \"" + t.getValue() + "\"", t.getLineNumber());
+            return Parser.notifyInvalidGeneric(t);
         }
         if (t.getValue().equals(";")) {
             children = new AbstractSyntaxTree[0];
