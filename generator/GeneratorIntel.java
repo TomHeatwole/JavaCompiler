@@ -7,7 +7,7 @@ public class GeneratorIntel extends Generator {
         super(input);
     }
 
-    public void write(String command, String dest, String src) throws IOException {
+    protected void write(String command, String dest, String src) throws IOException {
         if (command.equals("ret")) { // TODO: All 0 and 1 param commands necessary
             output.write("ret\n");
             return;

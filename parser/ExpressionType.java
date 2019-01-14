@@ -1,0 +1,3 @@
+public enum ExpressionType {
+    INT_LITERAL, STRING_LITERAL, FLOAT_LITERAL, EMPTY, BINARY, UNARY, PARENS
+}

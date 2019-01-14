@@ -2,6 +2,7 @@ public class Statement extends AbstractSyntaxTree {
 
     private static Token terminalToken;
     private StatementType type;
+    private int val; // TODO: Remove
 
     static {
         terminalToken = new Token(";", TokenType.SYMBOL);
@@ -13,6 +14,11 @@ public class Statement extends AbstractSyntaxTree {
 
     public StatementType getType() {
         return type;
+    }
+
+    // TODO: Remove
+    public int getValue() {
+        return val;
     }
 
     public int populate(Token[] tokens, int location) {

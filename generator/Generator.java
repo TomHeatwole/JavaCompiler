@@ -41,7 +41,7 @@ public abstract class Generator {
                 System.out.println("Error: body found for main method.");
                 return false;
             }
-            write("mov", "eax", "" + s.val);
+            write("mov", "eax", "" + s.getValue());
             write("ret", "", "");
             output.close();
         } catch (IOException e) {
