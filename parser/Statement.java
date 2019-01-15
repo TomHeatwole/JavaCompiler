@@ -32,18 +32,16 @@ public class Statement extends AbstractSyntaxTree {
         // <exp>
         Token r = new Token("return", TokenType.KEYWORD);
         if (!tokens[location].equals(r)) {
-            System.out.println("Error: We only support \"return <int_literal>;\" right now.");
+            System.out.println("Error: We only support \"return <expression>;\" right now.");
             return -1;
         }
+        // TODO: Handle return from void
         type = StatementType.RETURN;
-        Token t = tokens[++location];
-        if (t.getType() == TokenType.INT_LITERAL) {
-            this.val = Integer.parseInt(t.getValue());
-        } else {
-            System.out.println("Error: We only support \"return <int_literal>;\" right now.");
-            return -1;
-        }
-        return (tokens[++location].equals(terminalToken) ? ++location : -1);
+        children = new Expression[1];
+        children[0] = new Expression(this);
+        location = children[0].populate(tokens, ++location);
+        // TODO: Check children[0].getReturnType() is valid to return from method type (maybe do in gen)
+        return location > -1 && tokens[location].equals(terminalToken) ? ++location : -1;
     }
 }
 

@@ -3,20 +3,17 @@ import java.util.LinkedList;
 public class Expression extends AbstractSyntaxTree {
 
     private Token terminalToken;
-    private String unaryOperator;
     private String[] binaryOperators;
     private ExpressionType type;
     private String returnType;
+    private String value;
 
     public Expression(AbstractSyntaxTree parent) {
         super(parent);
-        unaryOperator = "";
+        value = "";
+        returnType = "";
         binaryOperators = new String[0];
         terminalToken = new Token(";", TokenType.SYMBOL, 0);
-    }
-
-    public String getUnaryType() {
-        return unaryOperator;
     }
 
     public String[] getBinaryTypes() {
@@ -29,6 +26,10 @@ public class Expression extends AbstractSyntaxTree {
 
     public ExpressionType getType() {
         return type;
+    }
+
+    public String getValue() {
+        return value;
     }
 
     public void setTerminalToken(Token t) {
@@ -47,9 +48,14 @@ public class Expression extends AbstractSyntaxTree {
             children[0] = new Expression(this);
             if (Parser.unaryOperators.contains(t.getValue())) {
                 type = ExpressionType.UNARY;
-                unaryOperator = t.getValue();
+                value = t.getValue();
                 ((Expression)(children[0])).setTerminalToken(this.terminalToken);
-                return children[0].populate(tokens, ++location);
+                location = children[0].populate(tokens, ++location);
+                if (location == -1) {
+                    return -1;
+                }
+                this.returnType = ((Expression)(children[0])).getReturnType();
+                return location;
             } else if (t.getValue().equals("(")) {
                 type = ExpressionType.PARENS;
                 ((Expression)(children[0])).setTerminalToken(new Token(")", TokenType.SYMBOL));
@@ -59,16 +65,16 @@ public class Expression extends AbstractSyntaxTree {
             }
             location = (children[0]).populate(tokens, ++location);
             // TODO: Check that return types make sense on unary operator (or should we do this during gen?)
-            returnType = ((Expression)(children[0])).getReturnType();
+            this.returnType = ((Expression)(children[0])).getReturnType();
             return location;
         }
-        location++;
         if (tokens[location + 1].equals(terminalToken)) {
             this.type = Parser.TokenTypeToExpressionType.get(tokens[location].getType());
             if (type == null) {
                 return Parser.notifyInvalidGeneric(tokens[location]);
             }
             this.returnType = Parser.ExpressionTypeToReturnType.get(this.type);
+            this.value = tokens[location].getValue();
             return location + 1;
         }
         // TODO: Handle all binary stuff
@@ -90,6 +96,7 @@ public class Expression extends AbstractSyntaxTree {
             binaryList.add(tokens[location + 1].getValue());
         } while (!tokens[location + 1].equals(terminalToken));
         */
+        System.out.println("Error: not implemented");
         return -1;
     }
 }
