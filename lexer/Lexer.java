@@ -5,8 +5,35 @@ import java.util.Stack;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 
 public class Lexer {
+
+    private static HashSet<String> twoCharSymbols;
+
+    static {
+        twoCharSymbols = new HashSet<String>();
+        twoCharSymbols.add("++");
+        twoCharSymbols.add("--");
+        twoCharSymbols.add("+=");
+        twoCharSymbols.add("-=");
+        twoCharSymbols.add("/=");
+        twoCharSymbols.add("*=");
+        twoCharSymbols.add(">=");
+        twoCharSymbols.add("<=");
+        twoCharSymbols.add("!=");
+        twoCharSymbols.add("==");
+        twoCharSymbols.add("&&");
+        twoCharSymbols.add("||");
+        twoCharSymbols.add(">>");
+        twoCharSymbols.add("<<");
+        twoCharSymbols.add("%=");
+        twoCharSymbols.add("&=");
+        twoCharSymbols.add("^=");
+        twoCharSymbols.add("|=");
+
+        // TODO: Three character symbols: <<=, >>=, >>>
+    }
 
     private String[] keywords;
 
@@ -20,7 +47,6 @@ public class Lexer {
         // TODO: Maybe add char # to token using quoteOffset 
         // TODO: Maybe hash keywords instead of binary search? - probably not neccesary due to problem size
         // TODO: Bug Fix: Doesn't parse last line if there's no empty line at the end of the file
-        // TODO: Parse ++, --, +=, *=, /=, -=, <=, >=, etc. as one token
         ArrayList<String> code = new ArrayList<>();
 		ArrayList<Integer> lineNums = new ArrayList<>(); // lineNums[significant line #] = original line #
 		if (!checkBalance(getScanner(fileName), code, lineNums)) {
@@ -121,9 +147,10 @@ public class Lexer {
                         words[j + 1] = words[j + 1].substring(1);
 					}
 				} else { // symbol
-					ret.add(new Token("" + word.charAt(0), TokenType.SYMBOL, lineNums.get(lineNumber)));
+                    int offset = (word.length() > 1 && twoCharSymbols.contains(word.substring(0,2))) ? 2 : 1;
+                    ret.add(new Token(word.substring(0, offset), TokenType.SYMBOL, lineNums.get(lineNumber)));
+                    word = word.substring(offset);
 					next = false;
-					word = word.substring(1);
 				}
 			}
 		}
