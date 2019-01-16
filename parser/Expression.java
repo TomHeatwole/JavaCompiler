@@ -3,7 +3,7 @@ import java.util.LinkedList;
 public class Expression extends AbstractSyntaxTree {
 
     private Token terminalToken;
-    private String[] binaryOperators;
+    private String binaryOperator;
     private ExpressionType type;
     private String returnType;
     private String value;
@@ -12,12 +12,12 @@ public class Expression extends AbstractSyntaxTree {
         super(parent);
         value = "";
         returnType = "";
-        binaryOperators = new String[0];
+        binaryOperator = "";
         terminalToken = new Token(";", TokenType.SYMBOL, 0);
     }
 
-    public String[] getBinaryTypes() {
-        return binaryOperators;
+    public String getBinaryOperator() {
+        return binaryOperator;
     }
 
     public String getReturnType() {
@@ -56,7 +56,7 @@ public class Expression extends AbstractSyntaxTree {
                 }
                 this.returnType = ((Expression)(children[0])).getReturnType();
                 return location;
-            } else if (t.getValue().equals("(")) {
+            } else if (t.getValue().equals("(")) { // TODO: []
                 type = ExpressionType.PARENS;
                 ((Expression)(children[0])).setTerminalToken(new Token(")", TokenType.SYMBOL));
             } else {
@@ -64,7 +64,6 @@ public class Expression extends AbstractSyntaxTree {
                 return Parser.notifyInvalidGeneric(tokens[location]);
             }
             location = (children[0]).populate(tokens, ++location);
-            // TODO: Check that return types make sense on unary operator (or should we do this during gen?)
             this.returnType = ((Expression)(children[0])).getReturnType();
             return location;
         }
@@ -77,25 +76,9 @@ public class Expression extends AbstractSyntaxTree {
             this.value = tokens[location].getValue();
             return location + 1;
         }
-        // TODO: Handle all binary stuff
-        /* Consider first pass to find where to split and parse out parentheticals???
-        // TODO: Doesn't have to be binary until we find a binary operator
-        type = ExpressionType.BINARY;
-        LinkedList<String> binaryList = new LinkedList<>();
-        LinkedList<Expression> childrenList = new LinkedList<>();
-        do {
-            // TODO: Check end of binary expression
-            Expression next = new Expression(this);
-            // TODO: + 1 doesn't work since they're not all necessarily literals
-            next.setTerminalToken(tokens[location + 1]);
-            if (next.populate(tokens, location) != location + 1) {
-                return -1;
-            }
-            location++;
-            childrenList.add(next);
-            binaryList.add(tokens[location + 1].getValue());
-        } while (!tokens[location + 1].equals(terminalToken));
-        */
+        // TODO: For now we're assuming it's a binary operator. Also handle normal expressions.
+        int startingLocation = location;
+        int[] firstOpLocation = new int[17]; // indexed by order of operations defined here: https://introcs.cs.princeton.edu/java/11precedence/
         System.out.println("Error: not implemented");
         return -1;
     }

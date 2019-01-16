@@ -99,6 +99,7 @@ public abstract class Generator {
                             if (!exp.getReturnType().equals("boolean")) {
                                 return notifyError("Unary operator: ! not valid on type: " + exp.getReturnType() + " on line TODO");
                             }
+                            // TODO: Handle !
                             break;
                     }
                     break;

@@ -12,16 +12,18 @@ public class Parser {
     public static HashSet<String> unaryOperators;
     public static HashMap<TokenType, ExpressionType> TokenTypeToExpressionType;
     public static HashMap<ExpressionType, String> ExpressionTypeToReturnType;
+    public static HashSet[] orderOfOperations;
     // TODO: keep track of class variables HashSet[class & name & params] 
 
     static {
-        accessModifiers = new HashSet<String>();
-        classTypes = new HashSet<String>();
-        primitiveTypes = new HashSet<String>();
-        customTypes = new HashSet<String>();
-        unaryOperators = new HashSet<String>();
-        TokenTypeToExpressionType = new HashMap<TokenType, ExpressionType>();
-        ExpressionTypeToReturnType = new HashMap<ExpressionType, String>();
+        accessModifiers = new HashSet<>();
+        classTypes = new HashSet<>();
+        primitiveTypes = new HashSet<>();
+        customTypes = new HashSet<>();
+        unaryOperators = new HashSet<>();
+        TokenTypeToExpressionType = new HashMap<>();
+        ExpressionTypeToReturnType = new HashMap<>();
+        orderOfOperations = new HashSet[17];
 
         accessModifiers.add("public");
         accessModifiers.add("private");
