@@ -205,7 +205,8 @@ public class Lexer {
 		Stack<Character> parens = new Stack<>(); // stores {, [, (
 		Stack<String> locations = new Stack<>(); // stores locations of {,[,( 
 		String line = "";
-		for (int lineNumber = 0; s.hasNextLine(); lineNumber++, line = ' ' + s.nextLine() + ' ') {
+		for (int lineNumber = 0; s.hasNextLine(); lineNumber++) {
+            line = ' ' + s.nextLine() + ' ';
 			StringBuilder parsedLine = new StringBuilder();
 			for (int charNumber = 1; charNumber < line.length() - 1; charNumber++) {
 				char c = line.charAt(charNumber);

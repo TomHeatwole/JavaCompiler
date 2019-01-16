@@ -21,6 +21,9 @@ public class Compile {
 			return;
 		}
 
+        // Uncomment for debugging lexer
+        // for (int i = 0; i < tokens.length; i++) System.out.println(tokens[i]);
+
         // Parse
         Program p = new Program(null);
         if (p.populate(tokens, 0) == -1) {
