@@ -52,6 +52,8 @@ public class Expression extends AbstractSyntaxTree {
         if (tokens[location + 1].equals(terminalToken)) {
             this.type = Parser.TokenTypeToExpressionType.get(tokens[location].getType());
             if (type == null) {
+                System.out.println(tokens[location]);
+                System.out.println(terminalToken);
                 return Parser.notifyInvalidGeneric(tokens[location]);
             }
             this.returnType = Parser.ExpressionTypeToReturnType.get(this.type);
@@ -66,9 +68,9 @@ public class Expression extends AbstractSyntaxTree {
             // TODO: skip over ()s and []s ****USE LEXER????*******
             Integer index = Parser.orderOfOperations.get(tokens[i]);
             if (index != null && firstOpLocation[index] == 0) {
-                // TODO: Find out if checking there's a symbol on the left is sound
+                // TODO: This check will need to change once we accept ++ and -- 
                 t = tokens[i];
-                if (!t.getValue().equals("-") || i != location && tokens[i - 1].getType() == TokenType.SYMBOL) {
+                if (!t.getValue().equals("-") || i != location && tokens[i - 1].getType() != TokenType.SYMBOL) {
                     firstOpLocation[index] = i;
                 }
             }
