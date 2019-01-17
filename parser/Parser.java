@@ -12,7 +12,11 @@ public class Parser {
     public static HashSet<String> unaryOperators;
     public static HashMap<TokenType, ExpressionType> TokenTypeToExpressionType;
     public static HashMap<ExpressionType, String> ExpressionTypeToReturnType;
-    public static HashSet[] orderOfOperations;
+    public static HashMap<Token, Integer> orderOfOperations;
+    public static HashMap<String, String> binOpToReturnType;
+
+    public static final int orderOpsSize = 17;
+
     // TODO: keep track of class variables HashSet[class & name & params] 
 
     static {
@@ -23,7 +27,8 @@ public class Parser {
         unaryOperators = new HashSet<>();
         TokenTypeToExpressionType = new HashMap<>();
         ExpressionTypeToReturnType = new HashMap<>();
-        orderOfOperations = new HashSet[17];
+        orderOfOperations = new HashMap<>();
+        binOpToReturnType = new HashMap<>();
 
         accessModifiers.add("public");
         accessModifiers.add("private");
@@ -59,6 +64,49 @@ public class Parser {
         ExpressionTypeToReturnType.put(ExpressionType.CHAR_LITERAL, "char");
         ExpressionTypeToReturnType.put(ExpressionType.INT_LITERAL, "int");
         ExpressionTypeToReturnType.put(ExpressionType.FLOAT_LITERAL, "float");
+
+        // TODO: Populate as much as necessary from: https://introcs.cs.princeton.edu/java/11precedence/
+        orderOfOperations.put(new Token("*", TokenType.SYMBOL), 12);
+        orderOfOperations.put(new Token("/", TokenType.SYMBOL), 12);
+        orderOfOperations.put(new Token("%", TokenType.SYMBOL), 12);
+        orderOfOperations.put(new Token("+", TokenType.SYMBOL), 11);
+        orderOfOperations.put(new Token("-", TokenType.SYMBOL), 11);
+        orderOfOperations.put(new Token(">>", TokenType.SYMBOL), 10);
+        orderOfOperations.put(new Token("<<", TokenType.SYMBOL), 10);
+        orderOfOperations.put(new Token(">>>", TokenType.SYMBOL), 10); // Still needs to be written into lexer
+        orderOfOperations.put(new Token(">", TokenType.SYMBOL), 9);
+        orderOfOperations.put(new Token("<", TokenType.SYMBOL), 9);
+        orderOfOperations.put(new Token("<=", TokenType.SYMBOL), 9);
+        orderOfOperations.put(new Token(">=", TokenType.SYMBOL), 9);
+        orderOfOperations.put(new Token("instanceof", TokenType.KEYWORD, 0), 9);
+        orderOfOperations.put(new Token("==", TokenType.SYMBOL), 8);
+        orderOfOperations.put(new Token("!=", TokenType.SYMBOL), 8);
+        orderOfOperations.put(new Token("&", TokenType.SYMBOL), 7);
+        orderOfOperations.put(new Token("^", TokenType.SYMBOL), 6);
+        orderOfOperations.put(new Token("|", TokenType.SYMBOL), 5);
+        orderOfOperations.put(new Token("&&", TokenType.SYMBOL), 4);
+        orderOfOperations.put(new Token("||", TokenType.SYMBOL), 3);
+
+        binOpToReturnType.put("*", "#");
+        binOpToReturnType.put("/", "#");
+        binOpToReturnType.put("%", "#");
+        binOpToReturnType.put("-", "#");
+        binOpToReturnType.put(">>", "#");
+        binOpToReturnType.put("<<", "#");
+        binOpToReturnType.put(">>>", "#");
+        binOpToReturnType.put("&", "#");
+        binOpToReturnType.put("^", "#");
+        binOpToReturnType.put("|", "#");
+
+        binOpToReturnType.put("<", "boolean");
+        binOpToReturnType.put(">", "boolean");
+        binOpToReturnType.put("<=", "boolean");
+        binOpToReturnType.put(">=", "boolean");
+        binOpToReturnType.put("==", "boolean");
+        binOpToReturnType.put("!=", "boolean");
+        binOpToReturnType.put("instanceof", "boolean");
+        binOpToReturnType.put("&&", "boolean");
+        binOpToReturnType.put("||", "boolean");
     }
 
     public static int notifyInvalid(String message, int lineNumber) {
@@ -67,7 +115,7 @@ public class Parser {
     }
 
     public static int notifyInvalidGeneric(Token t) {
-        return notifyInvalid("Unexpected token: " + t.getValue(), t.getLineNumber());
+        return notifyInvalid("Unexpected token: '" + t.getValue() + "'", t.getLineNumber());
     }
 
     public static int parseHeader(Token[] tokens, int location, AbstractSyntaxTree parent, ItemWithHeader[] child) {

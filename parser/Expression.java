@@ -76,10 +76,50 @@ public class Expression extends AbstractSyntaxTree {
             this.value = tokens[location].getValue();
             return location + 1;
         }
-        // TODO: For now we're assuming it's a binary operator. Also handle normal expressions.
-        int startingLocation = location;
-        int[] firstOpLocation = new int[17]; // indexed by order of operations defined here: https://introcs.cs.princeton.edu/java/11precedence/
-        System.out.println("Error: not implemented");
+        int[] firstOpLocation = new int[Parser.orderOpsSize]; // indexed by order of operations defined here: https://introcs.cs.princeton.edu/java/11precedence/
+        int i = location;
+        for (; i < tokens.length && !tokens[i].equals(terminalToken); i++) {
+            // TODO: skip over ()s and []s ****USE LEXER????*******
+            Integer index = Parser.orderOfOperations.get(tokens[i]);
+            if (index != null && firstOpLocation[index] == 0) {
+                firstOpLocation[index] = i;
+            }
+        }
+        if (i == tokens.length) {
+            System.out.println(tokens[i - 2]);
+            return Parser.notifyInvalid("Expected '" + terminalToken.getValue() + "' but never found.", tokens[i - 2].getLineNumber());
+        }
+        for (int j = 0; j < firstOpLocation.length; j++) {
+            if (firstOpLocation[j] != 0) {
+                t = tokens[firstOpLocation[j]];
+                type = ExpressionType.BINARY;
+                binaryOperator = t.getValue();
+                children = new Expression[2];
+                children[0] = new Expression(this);
+                ((Expression)(children[0])).setTerminalToken(t);
+                children[0].populate(tokens, location);
+                children[1] = new Expression(this);
+                ((Expression)(children[1])).setTerminalToken(terminalToken);
+                children[1].populate(tokens, firstOpLocation[j] + 1);
+                if (binaryOperator.equals("+")) {
+                    returnType = ((Expression)(children[0])).getReturnType().equals("String") ? "String" : "#";
+                } else {
+                    returnType = Parser.binOpToReturnType.get(binaryOperator);
+                }
+                if (returnType.equals("#")) {
+                    if (((Expression)(children[0])).getReturnType().equals("int") && ((Expression)(children[1])).getReturnType().equals("int")) {
+                        returnType = "int";
+                    } else {
+                        // TODO: Find out if it's necessary to differentiate between int/short/long and float/double here
+                        returnType = "float";
+                    }
+                }
+                return i;
+            }
+        }
+
+        // TODO: Not a binary operation
+        System.out.println("Error: Not implemented");
         return -1;
     }
 }

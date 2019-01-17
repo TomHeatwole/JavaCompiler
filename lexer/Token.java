@@ -49,6 +49,10 @@ public class Token {
         return false;
     }
 
+    public int hashCode() {
+        return value.hashCode() + type.hashCode(); // This should be completely fine for the size of my hashmaps
+    }
+
     // For debugging
     public String toString() {
         return "" + lineNumber + " " + type + " " + value;
