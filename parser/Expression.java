@@ -3,7 +3,6 @@ import java.util.LinkedList;
 public class Expression extends AbstractSyntaxTree {
 
     private Token terminalToken;
-    private String binaryOperator;
     private ExpressionType type;
     private String returnType;
     private String value;
@@ -12,12 +11,7 @@ public class Expression extends AbstractSyntaxTree {
         super(parent);
         value = "";
         returnType = "";
-        binaryOperator = "";
         terminalToken = new Token(";", TokenType.SYMBOL, 0);
-    }
-
-    public String getBinaryOperator() {
-        return binaryOperator;
     }
 
     public String getReturnType() {
@@ -83,7 +77,7 @@ public class Expression extends AbstractSyntaxTree {
                 int opLoc = firstOpLocation[j];
                 t = tokens[opLoc];
                 type = ExpressionType.BINARY;
-                binaryOperator = t.getValue();
+                value = t.getValue();
                 children = new Expression[2];
                 children[0] = new Expression(this);
                 ((Expression)(children[0])).setTerminalToken(t);
@@ -91,10 +85,10 @@ public class Expression extends AbstractSyntaxTree {
                 children[1] = new Expression(this);
                 ((Expression)(children[1])).setTerminalToken(terminalToken);
                 children[1].populate(tokens, opLoc + 1);
-                if (binaryOperator.equals("+")) {
+                if (value.equals("+")) {
                     returnType = ((Expression)(children[0])).getReturnType().equals("String") ? "String" : "#";
                 } else {
-                    returnType = Parser.binOpToReturnType.get(binaryOperator);
+                    returnType = Parser.binOpToReturnType.get(value);
                 }
                 if (returnType.equals("#")) {
                     if (((Expression)(children[0])).getReturnType().equals("int") && ((Expression)(children[1])).getReturnType().equals("int")) {

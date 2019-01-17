@@ -11,12 +11,13 @@ public abstract class Generator {
     protected BufferedWriter output;
 
     protected static HashSet<String> noOperandCommands;
-
     protected static HashSet<String> oneOperandCommands;
+    protected static HashMap<String, String> binaryOperatorToCommand;
 
     static {
-        noOperandCommands = new HashSet<String>();
-        oneOperandCommands = new HashSet<String>();
+        noOperandCommands = new HashSet<>();
+        oneOperandCommands = new HashSet<>();
+        binaryOperatorToCommand = new HashMap<>();
 
         noOperandCommands.add("ret");
 
@@ -24,6 +25,12 @@ public abstract class Generator {
         oneOperandCommands.add("not");
         oneOperandCommands.add("push");
         oneOperandCommands.add("pop");
+
+        binaryOperatorToCommand.put("+", "add");
+        binaryOperatorToCommand.put("-", "sub");
+        binaryOperatorToCommand.put("*", "imul");
+        binaryOperatorToCommand.put("/", "idiv");
+        binaryOperatorToCommand.put("%", "mod");
     }
 
     public Generator(AbstractSyntaxTree input) {
@@ -110,15 +117,16 @@ public abstract class Generator {
             case BINARY:
                 Expression e1 = (Expression)(exp.getChildren()[0]);
                 Expression e2 = (Expression)(exp.getChildren()[1]);
-                if (!processExpression(e1)) {
-                    return false;
-                }
-                write("push", "rax");
                 if (!processExpression(e2)) {
                     return false;
                 }
+                write("push", "rax");
+                if (!processExpression(e1)) {
+                    return false;
+                }
                 write("pop", "rcx");
-                write("add", "rax", "rcx"); // TODO: Every operator, not just +
+                // TODO: Switch instead of hashmap
+                write(binaryOperatorToCommand.get(exp.getValue()), "rax", "rcx"); 
                 // TODO: Confirm operand types are valid 
                 break;
         }
