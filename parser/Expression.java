@@ -2,8 +2,6 @@ import java.util.LinkedList;
 
 public class Expression extends AbstractSyntaxTree {
 
-    // BIG TODO: Bug fix: Unary need to be checked AFTER binary
-
     private Token terminalToken;
     private String binaryOperator;
     private ExpressionType type;
@@ -45,29 +43,11 @@ public class Expression extends AbstractSyntaxTree {
             if (t == terminalToken) {
                 type = ExpressionType.EMPTY;
                 return location;
-            }
-            children = new Expression[1];
-            children[0] = new Expression(this);
-            if (Parser.unaryOperators.contains(t.getValue())) {
-                type = ExpressionType.UNARY;
-                value = t.getValue();
-                ((Expression)(children[0])).setTerminalToken(this.terminalToken);
-                location = children[0].populate(tokens, ++location);
-                if (location == -1) {
-                    return -1;
-                }
-                this.returnType = ((Expression)(children[0])).getReturnType();
-                return location;
             } else if (t.getValue().equals("(")) { // TODO: []
                 type = ExpressionType.PARENS;
-                ((Expression)(children[0])).setTerminalToken(new Token(")", TokenType.SYMBOL));
-            } else {
-                // TODO: Figure out if there are any valid cases remaining
-                return Parser.notifyInvalidGeneric(tokens[location]);
-            }
-            location = (children[0]).populate(tokens, ++location);
-            this.returnType = ((Expression)(children[0])).getReturnType();
-            return location;
+                value = t.getValue();
+                return makeSingleChild(new Token(")", TokenType.SYMBOL), tokens, location);
+            }             
         }
         if (tokens[location + 1].equals(terminalToken)) {
             this.type = Parser.TokenTypeToExpressionType.get(tokens[location].getType());
@@ -78,13 +58,19 @@ public class Expression extends AbstractSyntaxTree {
             this.value = tokens[location].getValue();
             return location + 1;
         }
+        
+        // Check if binary expression
         int[] firstOpLocation = new int[Parser.orderOpsSize]; // indexed by order of operations defined here: https://introcs.cs.princeton.edu/java/11precedence/
         int i = location;
         for (; i < tokens.length && !tokens[i].equals(terminalToken); i++) {
             // TODO: skip over ()s and []s ****USE LEXER????*******
             Integer index = Parser.orderOfOperations.get(tokens[i]);
             if (index != null && firstOpLocation[index] == 0) {
-                firstOpLocation[index] = i;
+                // TODO: Find out if checking there's a symbol on the left is sound
+                t = tokens[i];
+                if (!t.getValue().equals("-") || i != location && tokens[i - 1].getType() == TokenType.SYMBOL) {
+                    firstOpLocation[index] = i;
+                }
             }
         }
         if (i == tokens.length) {
@@ -92,7 +78,8 @@ public class Expression extends AbstractSyntaxTree {
         }
         for (int j = 0; j < firstOpLocation.length; j++) {
             if (firstOpLocation[j] != 0) {
-                t = tokens[firstOpLocation[j]];
+                int opLoc = firstOpLocation[j];
+                t = tokens[opLoc];
                 type = ExpressionType.BINARY;
                 binaryOperator = t.getValue();
                 children = new Expression[2];
@@ -101,10 +88,7 @@ public class Expression extends AbstractSyntaxTree {
                 children[0].populate(tokens, location);
                 children[1] = new Expression(this);
                 ((Expression)(children[1])).setTerminalToken(terminalToken);
-                children[1].populate(tokens, firstOpLocation[j] + 1);
-                System.out.println(((Expression)(children[0])).getType());
-                System.out.println(((Expression)(children[0])).getValue());
-                System.out.println(((Expression)(children[0])).getChildren().length);
+                children[1].populate(tokens, opLoc + 1);
                 if (binaryOperator.equals("+")) {
                     returnType = ((Expression)(children[0])).getReturnType().equals("String") ? "String" : "#";
                 } else {
@@ -121,10 +105,25 @@ public class Expression extends AbstractSyntaxTree {
                 return i;
             }
         }
+        t = tokens[location];
+        if (t.getType() == TokenType.SYMBOL && Parser.unaryOperators.contains(t.getValue())) {
+            type = ExpressionType.UNARY;
+            value = t.getValue();
+            return makeSingleChild(terminalToken, tokens, location);
+        }
 
-        // TODO: Not a binary operation
+        // TODO: Every other type of expression 
         System.out.println("Error: Not implemented");
         return -1;
     }
+
+    private int makeSingleChild(Token childTerminal, Token[] tokens, int location) {
+        children = new Expression[1];
+        children[0] = new Expression(this);
+        ((Expression)(children[0])).setTerminalToken(childTerminal);
+        int ret = children[0].populate(tokens, ++location);
+        this.returnType = ((Expression)(children[0])).getReturnType();
+        return ret;
+    };
 }
 
