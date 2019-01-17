@@ -2,6 +2,8 @@ import java.util.LinkedList;
 
 public class Expression extends AbstractSyntaxTree {
 
+    // BIG TODO: Bug fix: Unary need to be checked AFTER binary
+
     private Token terminalToken;
     private String binaryOperator;
     private ExpressionType type;
@@ -86,7 +88,6 @@ public class Expression extends AbstractSyntaxTree {
             }
         }
         if (i == tokens.length) {
-            System.out.println(tokens[i - 2]);
             return Parser.notifyInvalid("Expected '" + terminalToken.getValue() + "' but never found.", tokens[i - 2].getLineNumber());
         }
         for (int j = 0; j < firstOpLocation.length; j++) {
@@ -101,6 +102,9 @@ public class Expression extends AbstractSyntaxTree {
                 children[1] = new Expression(this);
                 ((Expression)(children[1])).setTerminalToken(terminalToken);
                 children[1].populate(tokens, firstOpLocation[j] + 1);
+                System.out.println(((Expression)(children[0])).getType());
+                System.out.println(((Expression)(children[0])).getValue());
+                System.out.println(((Expression)(children[0])).getChildren().length);
                 if (binaryOperator.equals("+")) {
                     returnType = ((Expression)(children[0])).getReturnType().equals("String") ? "String" : "#";
                 } else {

@@ -22,4 +22,12 @@ public class GeneratorIntel extends Generator {
         line.append('\n');
         output.write(line.toString());
     }
+
+    protected void write(String command, String dest) throws IOException {
+        write(command, dest, "");
+    }
+
+    protected void write(String command) throws IOException {
+        write(command, "", "");
+    }
 }

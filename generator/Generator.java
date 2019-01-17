@@ -22,6 +22,8 @@ public abstract class Generator {
 
         oneOperandCommands.add("neg");
         oneOperandCommands.add("not");
+        oneOperandCommands.add("push");
+        oneOperandCommands.add("pop");
     }
 
     public Generator(AbstractSyntaxTree input) {
@@ -29,6 +31,8 @@ public abstract class Generator {
     }
 
     protected abstract void write(String command, String dest, String src) throws IOException;
+    protected abstract void write(String command, String dest) throws IOException;
+    protected abstract void write(String command) throws IOException;
 
     protected void writeLine(String line) throws IOException {
         output.write(line);
@@ -64,7 +68,7 @@ public abstract class Generator {
             if (!processExpression((Expression)(s.getChildren()[0]))) {
                 return false;
             }
-            write("ret", "", "");
+            write("ret");
             output.close();
         } catch (IOException e) {
             return notifyError("Failed to open file: " + fileName + " for reading.");
@@ -72,40 +76,51 @@ public abstract class Generator {
         return true;
     }
 
-    private boolean processExpression(Expression exp) {
-        // TODO: These shouldn't always be eax
-        try {
-            switch (exp.getType()) {
-                case INT_LITERAL:
-                    write("mov", "eax", exp.getValue());
-                    break;
-                case UNARY:
-                    processExpression((Expression)(exp.getChildren()[0]));
-                    switch (exp.getValue()) {
-                        case "~":
-                            if (!exp.getReturnType().equals("int")) {
-                                return notifyError("Unary operator: ~ not valid on type: " + exp.getReturnType() + " on line TODO");
-                            }
-                            write("not", "eax", "");
-                            break;
-                        case "-":
-                            // TODO: HashSet of numeric types instead of manual checking
-                            if (!exp.getReturnType().equals("int") && !exp.getReturnType().equals("float")) {
-                                return notifyError("Unary operator: - not valid on type: " + exp.getReturnType() + " on line TODO");
-                            }
-                            write("neg", "eax", "");
-                            break;
-                        case "!":
-                            if (!exp.getReturnType().equals("boolean")) {
-                                return notifyError("Unary operator: ! not valid on type: " + exp.getReturnType() + " on line TODO");
-                            }
-                            // TODO: Handle !
-                            break;
-                    }
-                    break;
-            }
-        } catch (IOException e) {
-            return notifyError("Unknown problem writing to assembly file.");
+    private boolean processExpression(Expression exp) throws IOException {
+        switch (exp.getType()) {
+            case INT_LITERAL:
+                write("mov", "rax", exp.getValue());
+                break;
+            case UNARY:
+                if (!processExpression((Expression)(exp.getChildren()[0]))) {
+                    return false;
+                }
+                switch (exp.getValue()) {
+                    case "~":
+                        if (!exp.getReturnType().equals("int")) {
+                            return notifyError("Unary operator: ~ not valid on type: " + exp.getReturnType() + " on line TODO");
+                        }
+                        write("not", "rax");
+                        break;
+                    case "-":
+                        // TODO: HashSet of numeric types instead of manual checking
+                        if (!exp.getReturnType().equals("int") && !exp.getReturnType().equals("float")) {
+                            return notifyError("Unary operator: - not valid on type: " + exp.getReturnType() + " on line TODO");
+                        }
+                        write("neg", "rax");
+                        break;
+                    case "!":
+                        if (!exp.getReturnType().equals("boolean")) {
+                            return notifyError("Unary operator: ! not valid on type: " + exp.getReturnType() + " on line TODO");
+                        }
+                        // TODO: Handle !
+                        break;
+                }
+                break;
+            case BINARY:
+                Expression e1 = (Expression)(exp.getChildren()[0]);
+                Expression e2 = (Expression)(exp.getChildren()[1]);
+                if (!processExpression(e1)) {
+                    return false;
+                }
+                write("push", "rax");
+                if (!processExpression(e2)) {
+                    return false;
+                }
+                write("pop", "rcx");
+                write("add", "rax", "rcx"); // TODO: Every operator, not just +
+                // TODO: Confirm operand types are valid 
+                break;
         }
         return true;
     }
