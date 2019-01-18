@@ -56,25 +56,25 @@ public class Expression extends AbstractSyntaxTree {
         }
         
         // Check if binary expression
-        int[] firstOpLocation = new int[Parser.orderOpsSize]; // indexed by order of operations defined here: https://introcs.cs.princeton.edu/java/11precedence/
+        int[] lastOpLocation = new int[Parser.orderOpsSize]; // indexed by order of operations defined here: https://introcs.cs.princeton.edu/java/11precedence/
         int i = location;
         for (; i < tokens.length && !tokens[i].equals(terminalToken); i++) {
             // TODO: skip over ()s and []s ****USE LEXER????*******
-            Integer index = Parser.orderOfOperations.get(tokens[i]);
-            if (index != null && firstOpLocation[index] == 0) {
+            Integer strength = Parser.orderOfOperations.get(tokens[i]);
+            if (strength != null) {
                 // TODO: This check will need to change once we accept ++ and -- 
                 t = tokens[i];
                 if (!t.getValue().equals("-") || i != location && tokens[i - 1].getType() != TokenType.SYMBOL) {
-                    firstOpLocation[index] = i;
+                    lastOpLocation[strength] = i;
                 }
             }
         }
         if (i == tokens.length) {
             return Parser.notifyInvalid("Expected '" + terminalToken.getValue() + "' but never found.", tokens[i - 2].getLineNumber());
         }
-        for (int j = 0; j < firstOpLocation.length; j++) {
-            if (firstOpLocation[j] != 0) {
-                int opLoc = firstOpLocation[j];
+        for (int j = 0; j < lastOpLocation.length; j++) {
+            if (lastOpLocation[j] != 0) {
+                int opLoc = lastOpLocation[j];
                 t = tokens[opLoc];
                 type = ExpressionType.BINARY;
                 value = t.getValue();

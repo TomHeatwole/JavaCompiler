@@ -12,12 +12,10 @@ public abstract class Generator {
 
     protected static HashSet<String> noOperandCommands;
     protected static HashSet<String> oneOperandCommands;
-    protected static HashMap<String, String> binaryOperatorToCommand;
 
     static {
         noOperandCommands = new HashSet<>();
         oneOperandCommands = new HashSet<>();
-        binaryOperatorToCommand = new HashMap<>();
 
         noOperandCommands.add("ret");
 
@@ -25,13 +23,8 @@ public abstract class Generator {
         oneOperandCommands.add("not");
         oneOperandCommands.add("push");
         oneOperandCommands.add("pop");
-
-        binaryOperatorToCommand.put("+", "add");
-        binaryOperatorToCommand.put("-", "sub");
-        binaryOperatorToCommand.put("*", "imul");
-        binaryOperatorToCommand.put("/", "idiv");
-        binaryOperatorToCommand.put("%", "mod");
-    }
+        oneOperandCommands.add("idiv");
+   }
 
     public Generator(AbstractSyntaxTree input) {
         this.input = input;
@@ -86,7 +79,7 @@ public abstract class Generator {
     private boolean processExpression(Expression exp) throws IOException {
         switch (exp.getType()) {
             case INT_LITERAL:
-                write("mov", "rax", exp.getValue());
+                write("mov", "eax", exp.getValue());
                 break;
             case UNARY:
                 if (!processExpression((Expression)(exp.getChildren()[0]))) {
@@ -97,14 +90,14 @@ public abstract class Generator {
                         if (!exp.getReturnType().equals("int")) {
                             return notifyError("Unary operator: ~ not valid on type: " + exp.getReturnType() + " on line TODO");
                         }
-                        write("not", "rax");
+                        write("not", "eax");
                         break;
                     case "-":
                         // TODO: HashSet of numeric types instead of manual checking
                         if (!exp.getReturnType().equals("int") && !exp.getReturnType().equals("float")) {
                             return notifyError("Unary operator: - not valid on type: " + exp.getReturnType() + " on line TODO");
                         }
-                        write("neg", "rax");
+                        write("neg", "eax");
                         break;
                     case "!":
                         if (!exp.getReturnType().equals("boolean")) {
@@ -125,10 +118,26 @@ public abstract class Generator {
                     return false;
                 }
                 write("pop", "rcx");
-                // TODO: Switch instead of hashmap
-                write(binaryOperatorToCommand.get(exp.getValue()), "rax", "rcx"); 
-                // TODO: Confirm operand types are valid 
-                break;
+                switch (exp.getValue()) {
+                    case "+":
+                        write("add", "eax", "ecx");
+                        break;
+                    case "-":
+                        write("sub", "eax", "ecx");
+                        break;
+                    case "*":
+                        write("imul", "eax", "ecx");
+                        break;
+                    case "/":
+                        write("mov", "edx", "0");
+                        write("idiv", "rcx");
+                        break;
+                    case "%":
+                        write("mov", "edx", "0");
+                        write("idiv", "rcx");
+                        write("mov", "eax", "edx");
+                        break;
+                }
         }
         return true;
     }
