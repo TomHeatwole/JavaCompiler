@@ -77,7 +77,13 @@ public abstract class Generator {
     }
 
     private boolean processExpression(Expression exp) throws IOException {
+        System.out.println(exp.getReturnType());
         switch (exp.getType()) {
+            case PARENS:
+                // TODO: Handle casting
+                // TODO: Handle function params
+                processExpression((Expression)(exp.getChildren()[0]));
+                break;
             case INT_LITERAL:
                 write("mov", "eax", exp.getValue());
                 break;
