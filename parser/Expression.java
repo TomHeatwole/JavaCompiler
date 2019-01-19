@@ -51,8 +51,6 @@ public class Expression extends AbstractSyntaxTree {
     protected int populate(Token[] tokens, int location, HashMap<Integer, Expression> alreadyParsed) {
         // TODO: Check for comma separated list of expressions
         Token t = tokens[location];
-        System.out.println(terminalToken);
-        System.out.println(tokens[location + 1]);
         if (tokens[location + 1].equals(terminalToken)) {
             this.type = Parser.TokenTypeToExpressionType.get(t.getType());
             if (type == null) {
@@ -60,7 +58,6 @@ public class Expression extends AbstractSyntaxTree {
             }
             this.returnType = Parser.ExpressionTypeToReturnType.get(this.type);
             this.value = t.getValue();
-            System.out.println("This should happen twice for sure");
             return location + 1;
         }
         
@@ -70,10 +67,11 @@ public class Expression extends AbstractSyntaxTree {
         for (; i < tokens.length && !tokens[i].equals(terminalToken); i++) {
             t = tokens[i];
             if (t.getValue().equals("(") || t.getValue().equals("[")) {
-                Expression exp = new Expression(this); // parent will be overridden if necessary
+                Expression[] exp = new Expression[1];
+                exp[0] = new Expression(this); // parent will be overridden if necessary
                 String terminalString = t.getValue().equals("(") ? ")" : "]";
-                exp.setTerminalToken(new Token(terminalString, TokenType.SYMBOL));
-                i = populateExpression(exp, tokens, location, alreadyParsed);
+                exp[0].setTerminalToken(new Token(terminalString, TokenType.SYMBOL));
+                i = populateExpression(exp, 0, tokens, i + 1, alreadyParsed);
                 if (i == -1) {
                     return -1;
                 }
@@ -84,6 +82,7 @@ public class Expression extends AbstractSyntaxTree {
                 // TODO: This check will need to change once we accept ++ and -- 
                 if (!t.getValue().equals("-") || i != location && tokens[i - 1].getType() != TokenType.SYMBOL) {
                     lastOpLocation[strength] = i;
+                } else {
                 }
             }
         }
@@ -99,10 +98,10 @@ public class Expression extends AbstractSyntaxTree {
                 children = new Expression[2];
                 children[0] = new Expression(this);
                 ((Expression)(children[0])).setTerminalToken(t);
-                populateExpression((Expression)children[0], tokens, location, alreadyParsed);
+                populateExpression(children, 0, tokens, location, alreadyParsed);
                 children[1] = new Expression(this);
                 ((Expression)(children[1])).setTerminalToken(terminalToken);
-                populateExpression((Expression)children[1], tokens, opLoc, alreadyParsed);
+                populateExpression(children, 1, tokens, opLoc + 1, alreadyParsed);
                 if (value.equals("+")) {
                     returnType = ((Expression)(children[0])).getReturnType().equals("String") ? "String" : "#";
                 } else {
@@ -148,17 +147,17 @@ public class Expression extends AbstractSyntaxTree {
         return -1;
     }
 
-    private int populateExpression(Expression toPopulate, Token[] tokens, int location, HashMap<Integer, Expression> alreadyParsed) {
+    private int populateExpression(AbstractSyntaxTree[] toPopulate, int popIndex, Token[] tokens, int location, HashMap<Integer, Expression> alreadyParsed) {
         Expression exp = alreadyParsed.get(location);
         if (exp == null) {
-            int ret = toPopulate.populate(tokens, location + 1, alreadyParsed);
-            toPopulate.setEndIndex(ret);
-            alreadyParsed.put(location, toPopulate);
+            int ret = ((Expression)(toPopulate[popIndex])).populate(tokens, location, alreadyParsed);
+            ((Expression)(toPopulate[popIndex])).setEndIndex(ret);
+            alreadyParsed.put(location, (Expression)(toPopulate[popIndex]));
         } else {
-            toPopulate = exp;
+            toPopulate[popIndex] = exp;
         }
-        toPopulate.setParent(this);
-        return toPopulate.getEndIndex();
+        ((Expression)(toPopulate[popIndex])).setParent(this);
+        return ((Expression)(toPopulate[popIndex])).getEndIndex();
     }
 
     private void selfDeepCopy(Expression copy) {
@@ -173,7 +172,7 @@ public class Expression extends AbstractSyntaxTree {
         children = new Expression[1];
         children[0] = new Expression(this);
         ((Expression)(children[0])).setTerminalToken(childTerminal);
-        int ret = populateExpression((Expression)children[0], tokens, location + 1, alreadyParsed);
+        int ret = populateExpression(children, 0, tokens, location + 1, alreadyParsed);
         this.returnType = ((Expression)(children[0])).getReturnType();
         return ret;
     }

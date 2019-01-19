@@ -77,7 +77,10 @@ public abstract class Generator {
     }
 
     private boolean processExpression(Expression exp) throws IOException {
-        System.out.println(exp.getReturnType());
+        if (exp.getType() == null) {
+            System.out.println(exp.getValue());
+            System.out.println(exp.getReturnType());
+        }
         switch (exp.getType()) {
             case PARENS:
                 // TODO: Handle casting
