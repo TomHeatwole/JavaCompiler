@@ -1,3 +1,8 @@
+# DEPRECATED
+
+Since I'm taking a compilers class now, and building a Java compiler for that, this project seems pretty redundant, and I probably won't continue with it.
+
+
 # JavaCompiler
 
 I've never studied compilers but I'm going to try and write one for fun.
