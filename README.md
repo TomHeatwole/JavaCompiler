@@ -1,6 +1,6 @@
 # DEPRECATED
 
-Since I'm taking a compilers class now, and building a Java compiler for that, this project seems pretty redundant, and I probably won't continue with it.
+Since I'm taking a compilers class now, and building a Java compiler for that, this project seems pretty redundant, and I probably won't continue with it. I did make some nice progress though before I started this class - code generation complete for simple integer math expressions and lexing/parsing infrastructure written to handle much, much more.
 
 
 # JavaCompiler
